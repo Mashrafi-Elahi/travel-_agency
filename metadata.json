@@ -1,0 +1,6 @@
+{
+  "name": "Travel Agency Dashboard",
+  "description": "A modern and responsive Travel Agency Dashboard Frontend MVP for managing packages, bookings, and viewing summary statistics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
