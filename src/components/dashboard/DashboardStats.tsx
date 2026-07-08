@@ -45,7 +45,7 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
 
       {/* Pending Inquiries */}
       <SummaryCard
-        title="Pending Inquiries"
+        title="Total Inquiries"
         value={stats.pendingInquiries}
         icon={<HelpCircle className="w-5 h-5" />}
         iconBgColor="bg-amber-50"
