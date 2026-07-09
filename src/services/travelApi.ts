@@ -1,15 +1,41 @@
-import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, Inquiry, InquiryStatus } from "../types/travel";
+import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, Destination, Inquiry, InquiryStatus } from "../types/travel";
 import { mockPackages } from "../data/mockPackages";
 import { mockBookings } from "../data/mockBookings";
 import { mockStats } from "../data/mockStats";
 import { mockCustomers } from "../data/mockCustomers";
 import { mockInquiries } from "../data/mockInquiries";
+import { mockDestinations } from "../data/mockDestinations";
 
 // In-memory data store for the current browser session
 let sessionPackages = [...mockPackages];
 let sessionBookings = [...mockBookings];
 let sessionCustomers: Customer[] = mockCustomers.map(c => ({ ...c, notes: [...c.notes], tags: [...c.tags] }));
 let sessionInquiries = [...mockInquiries];
+let sessionDestinations: Destination[] = mockDestinations.map((destination) => ({ ...destination }));
+
+const destinationKey = (value: string) => value.trim().toLowerCase();
+
+const hydrateDestinationCounts = (destinations: Destination[]): Destination[] => {
+  return destinations.map((destination) => ({
+    ...destination,
+    availablePackages: sessionPackages.filter(
+      (pkg) => destinationKey(pkg.destination) === destinationKey(`${destination.city}, ${destination.country}`)
+    ).length,
+  }));
+};
+
+const parsePackageDestination = (destination: string) => {
+  const [cityPart = "", ...countryParts] = destination.split(",");
+  const city = cityPart.trim();
+  const country = countryParts.join(",").trim();
+
+  return {
+    city: city || destination.trim(),
+    country: country || "Unknown",
+  };
+};
+
+const defaultDestinationImage = "https://images.unsplash.com/photo-1502920917128-1aa500764b72?auto=format&fit=crop&w=1000&q=80";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -45,13 +71,34 @@ export const travelApi = {
     return [...sessionPackages];
   },
 
-  async addPackage(pkg: Omit<TravelPackage, "id">): Promise<TravelPackage> {
+  async addPackage(pkg: Omit<TravelPackage, "id"> & { id?: string }): Promise<TravelPackage> {
     await delay(250);
     const newPackage: TravelPackage = {
-      id: `pkg-${Date.now()}`,
+      id: pkg.id || `pkg-${Date.now()}`,
       ...pkg,
-    };
+    } as TravelPackage;
     sessionPackages = [newPackage, ...sessionPackages];
+
+    const destinationExists = sessionDestinations.some(
+      (destination) => destinationKey(`${destination.city}, ${destination.country}`) === destinationKey(newPackage.destination)
+    );
+
+    if (!destinationExists) {
+      const parsed = parsePackageDestination(newPackage.destination);
+      sessionDestinations = [
+        {
+          id: `dest-${Date.now()}`,
+          name: newPackage.destination,
+          city: parsed.city,
+          country: parsed.country,
+          image: newPackage.image || defaultDestinationImage,
+          description: `Auto-created destination linked to ${newPackage.title}.`,
+          popular: false,
+        },
+        ...sessionDestinations,
+      ];
+    }
+
     return { ...newPackage };
   },
 
@@ -83,6 +130,64 @@ export const travelApi = {
   async getBookings(): Promise<BookingInquiry[]> {
     await delay(300);
     return [...sessionBookings];
+  },
+
+  // --- Destination Management API ---
+
+  async getDestinations(): Promise<Destination[]> {
+    await delay(300);
+    return hydrateDestinationCounts(sessionDestinations).map((destination) => ({ ...destination }));
+  },
+
+  async addDestination(destination: Omit<Destination, "id" | "availablePackages">): Promise<Destination> {
+    await delay(250);
+    const createdDestination: Destination = {
+      ...destination,
+      id: `dest-${Date.now()}`,
+      image: destination.image || defaultDestinationImage,
+      availablePackages: 0,
+    };
+    sessionDestinations = [createdDestination, ...sessionDestinations];
+    return { ...createdDestination };
+  },
+
+  async updateDestination(destinationId: string, updates: Partial<Omit<Destination, "id" | "availablePackages">>): Promise<Destination> {
+    await delay(250);
+    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
+    if (index === -1) {
+      throw new Error(`Destination with ID ${destinationId} not found`);
+    }
+
+    sessionDestinations[index] = {
+      ...sessionDestinations[index],
+      ...updates,
+    };
+
+    return { ...hydrateDestinationCounts([sessionDestinations[index]])[0] };
+  },
+
+  async deleteDestination(destinationId: string): Promise<void> {
+    await delay(250);
+    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
+    if (index === -1) {
+      throw new Error(`Destination with ID ${destinationId} not found`);
+    }
+    sessionDestinations = sessionDestinations.filter((destination) => destination.id !== destinationId);
+  },
+
+  async toggleDestinationPopular(destinationId: string): Promise<Destination> {
+    await delay(200);
+    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
+    if (index === -1) {
+      throw new Error(`Destination with ID ${destinationId} not found`);
+    }
+
+    sessionDestinations[index] = {
+      ...sessionDestinations[index],
+      popular: !sessionDestinations[index].popular,
+    };
+
+    return { ...hydrateDestinationCounts([sessionDestinations[index]])[0] };
   },
 
   async updateBookingStatus(id: string, status: BookingStatus): Promise<BookingInquiry> {

@@ -1,7 +1,6 @@
-import React from "react";
 import { LayoutDashboard, Compass, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut, MessageSquare } from "lucide-react";
 
-export type SidebarTab = "overview" | "packages" | "bookings" | "customers" | "inquiries";
+export type SidebarTab = "overview" | "packages" | "destinations" | "bookings" | "customers" | "inquiries";
 
 interface SidebarProps {
   activeTab: SidebarTab;
@@ -18,6 +17,11 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     {
       id: "packages" as SidebarTab,
       label: "Travel Packages",
+      icon: <Compass className="w-5 h-5" />,
+    },
+    {
+      id: "destinations" as SidebarTab,
+      label: "Destinations",
       icon: <Compass className="w-5 h-5" />,
     },
     {
@@ -59,7 +63,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-3 mb-3 block">
           Main Console
         </div>
-        
+
         {menuItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
