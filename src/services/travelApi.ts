@@ -16,6 +16,9 @@ let sessionPayments: PaymentRecord[] = [...mockPayments];
 let sessionReviews: Review[] = [...mockReviews];
 let sessionInquiries = [...mockInquiries];
 let sessionDestinations: Destination[] = mockDestinations.map((destination) => ({ ...destination }));
+let sessionPayments: PaymentRecord[] = mockPayments.map((payment) => ({ ...payment }));
+let sessionReviews: Review[] = mockReviews.map((review) => ({ ...review }));
+let sessionInquiries: Inquiry[] = mockInquiries.map((inquiry) => ({ ...inquiry }));
 
 const destinationKey = (value: string) => value.trim().toLowerCase();
 

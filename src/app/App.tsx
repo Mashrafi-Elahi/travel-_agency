@@ -285,32 +285,24 @@ export default function App() {
     }
 
     setIsSavingPackage(true);
-
     try {
-      const payload = {
-        title: packageForm.title.trim(),
-        destination: packageForm.destination.trim(),
-        category: packageForm.category,
-        image: packageForm.image.trim() || packageImageByCategory[packageForm.category] || packageImageByCategory.Beach,
-        price: priceNum,
-        duration: packageForm.duration.trim(),
-        rating: ratingNum,
-        status: packageForm.status,
-        description: packageForm.description.trim(),
-      };
-
-      if (packageModalMode === "edit" && editingPackageId) {
-        const updated = await travelApi.updatePackage(editingPackageId, payload);
-        setPackages((prev) => prev.map((pkg) => (pkg.id === editingPackageId ? updated : pkg)));
+      if (packageModalMode === "edit") {
+        setPackages((prev) =>
+          prev.map((pkg) => (pkg.id === nextPackage.id ? nextPackage : pkg))
+        );
       } else {
-        const created = await travelApi.addPackage(payload);
-        setPackages((prev) => [created, ...prev]);
+        await travelApi.addPackage(nextPackage);
+        setPackages((prev) => [nextPackage, ...prev]);
       }
 
       await syncStats();
       closePackageModal();
-    } catch (err) {
-      alert("Failed to save package. Please try again.");
+    } catch (error) {
+      alert(
+        packageModalMode === "edit"
+          ? "Failed to update package. Please try again."
+          : "Failed to add package. Please try again."
+      );
     } finally {
       setIsSavingPackage(false);
     }
@@ -678,7 +670,7 @@ export default function App() {
                 onStatusChange={handleUpdateInquiryStatus}
                 onAssignStaff={handleAssignInquiry}
                 onConvert={handleConvertInquiry}
-                onViewDetails={(inq) => setSelectedInquiry(inq)}
+                onViewDetails={setSelectedInquiry}
                 isUpdating={isUpdating}
               />
             </div>
