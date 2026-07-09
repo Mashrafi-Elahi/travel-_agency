@@ -6,9 +6,11 @@ import EmptyState from "../common/EmptyState";
 interface PackageGridProps {
   packages: TravelPackage[];
   onResetFilters?: () => void;
+  onEditPackage: (pkg: TravelPackage) => void;
+  onDeletePackage: (pkg: TravelPackage) => void;
 }
 
-export default function PackageGrid({ packages, onResetFilters }: PackageGridProps) {
+export default function PackageGrid({ packages, onResetFilters, onEditPackage, onDeletePackage }: PackageGridProps) {
   if (packages.length === 0) {
     return (
       <EmptyState
@@ -23,7 +25,12 @@ export default function PackageGrid({ packages, onResetFilters }: PackageGridPro
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {packages.map((pkg) => (
-        <PackageCard key={pkg.id} pkg={pkg} />
+        <PackageCard
+          key={pkg.id}
+          pkg={pkg}
+          onEdit={onEditPackage}
+          onDelete={onDeletePackage}
+        />
       ))}
     </div>
   );
