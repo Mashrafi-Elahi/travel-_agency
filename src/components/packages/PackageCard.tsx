@@ -1,13 +1,15 @@
 import React from "react";
 import { TravelPackage } from "../../types/travel";
-import { Star, MapPin, Tag } from "lucide-react";
+import { PencilLine, Star, MapPin, Tag, Clock, Trash2 } from "lucide-react";
 
 interface PackageCardProps {
   pkg: TravelPackage;
   key?: React.Key;
+  onEdit: (pkg: TravelPackage) => void;
+  onDelete: (pkg: TravelPackage) => void;
 }
 
-export default function PackageCard({ pkg }: PackageCardProps) {
+export default function PackageCard({ pkg, onEdit, onDelete }: PackageCardProps) {
   // Determine status styles
   const statusStyles = {
     Active: "bg-emerald-50 text-emerald-700 border-emerald-200/50",
@@ -51,13 +53,42 @@ export default function PackageCard({ pkg }: PackageCardProps) {
           <h4 className="text-sm font-bold text-slate-800 leading-snug font-display line-clamp-2 group-hover:text-brand-600 transition-colors">
             {pkg.title}
           </h4>
+          <p className="mt-2 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+            {pkg.description}
+          </p>
         </div>
 
-        <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-          <span className="text-xs text-slate-400">Package Price</span>
-          <span className="text-base font-extrabold text-slate-950">
-            ${pkg.price.toLocaleString()}<span className="text-[10px] font-normal text-slate-400">/person</span>
-          </span>
+        <div className="space-y-4 pt-4 border-t border-slate-50">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5" />
+              {pkg.duration}
+            </span>
+            <span className="font-semibold text-slate-400 uppercase tracking-wider">Package Price</span>
+          </div>
+          <div className="flex items-end justify-between gap-3">
+            <span className="text-base font-extrabold text-slate-950">
+              ${pkg.price.toLocaleString()}<span className="text-[10px] font-normal text-slate-400">/person</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onEdit(pkg)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <PencilLine className="w-3.5 h-3.5" />
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(pkg)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

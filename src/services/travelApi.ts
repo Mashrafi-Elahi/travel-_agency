@@ -45,6 +45,41 @@ export const travelApi = {
     return [...sessionPackages];
   },
 
+  async addPackage(pkg: Omit<TravelPackage, "id">): Promise<TravelPackage> {
+    await delay(250);
+    const newPackage: TravelPackage = {
+      id: `pkg-${Date.now()}`,
+      ...pkg,
+    };
+    sessionPackages = [newPackage, ...sessionPackages];
+    return { ...newPackage };
+  },
+
+  async updatePackage(id: string, changes: Partial<Omit<TravelPackage, "id">>): Promise<TravelPackage> {
+    await delay(250);
+    const index = sessionPackages.findIndex((pkg) => pkg.id === id);
+    if (index === -1) {
+      throw new Error(`Package with ID ${id} not found`);
+    }
+
+    sessionPackages[index] = {
+      ...sessionPackages[index],
+      ...changes,
+    };
+
+    return { ...sessionPackages[index] };
+  },
+
+  async deletePackage(id: string): Promise<void> {
+    await delay(200);
+    const index = sessionPackages.findIndex((pkg) => pkg.id === id);
+    if (index === -1) {
+      throw new Error(`Package with ID ${id} not found`);
+    }
+
+    sessionPackages = sessionPackages.filter((pkg) => pkg.id !== id);
+  },
+
   async getBookings(): Promise<BookingInquiry[]> {
     await delay(300);
     return [...sessionBookings];

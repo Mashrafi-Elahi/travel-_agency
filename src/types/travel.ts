@@ -8,8 +8,10 @@ export interface TravelPackage {
   category: string;
   image: string;
   price: number;
+  duration: string;
   rating: number;
   status: PackageStatus;
+  description: string;
 }
 
 export interface BookingInquiry {
