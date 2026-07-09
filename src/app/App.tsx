@@ -9,9 +9,12 @@ import BookingTable from "../components/bookings/BookingTable";
 import CustomerStats from "../components/customers/CustomerStats";
 import CustomerTable from "../components/customers/CustomerTable";
 import CustomerProfile from "../components/customers/CustomerProfile";
+import PaymentSummary from "../components/payments/PaymentSummary";
+import PaymentTable from "../components/payments/PaymentTable";
+import ReviewList from "../components/reviews/ReviewList";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag } from "../types/travel";
+import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
 import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users } from "lucide-react";
 
 export default function App() {
@@ -23,6 +26,8 @@ export default function App() {
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [bookings, setBookings] = useState<BookingInquiry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filter/Search states
@@ -53,16 +58,20 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsData, packagesData, bookingsData, customersData] = await Promise.all([
+      const [statsData, packagesData, bookingsData, customersData, paymentsData, reviewsData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
         travelApi.getCustomers(),
+        travelApi.getPayments(),
+        travelApi.getReviews(),
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
       setCustomers(customersData);
+      setPayments(paymentsData);
+      setReviews(reviewsData);
     } catch (err) {
       console.error("Error loading travel agency data:", err);
     } finally {
@@ -239,12 +248,34 @@ export default function App() {
     setSelectedCustomer((prev) => prev && prev.id === customerId ? updated : prev);
   };
 
+  // Handle changing payment settlement status
+  const handlePaymentStatusChange = async (id: string, status: PaymentStatus) => {
+    try {
+      const updated = await travelApi.updatePaymentStatus(id, status);
+      setPayments((prev) => prev.map((payment) => payment.id === id ? updated : payment));
+    } catch (err) {
+      alert("Failed to update payment status. Please try again.");
+    }
+  };
+
+  // Handle approving or hiding customer reviews
+  const handleReviewStatusChange = async (id: string, status: ReviewStatus) => {
+    try {
+      const updated = await travelApi.updateReviewStatus(id, status);
+      setReviews((prev) => prev.map((review) => review.id === id ? updated : review));
+    } catch (err) {
+      alert("Failed to update review status. Please try again.");
+    }
+  };
+
   // Render variables depending on activeTab
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
     bookings: "Bookings & Inquiries Manager",
     customers: "Customer Management",
+    payments: "Payments & Revenue",
+    reviews: "Reviews & Ratings",
   };
 
   const headerSubtitleMap: Record<SidebarTab, string> = {
@@ -252,6 +283,8 @@ export default function App() {
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
     bookings: "Manage customer reservations, track departures, and confirm payments",
     customers: "View customer profiles, booking history, and manage notes",
+    payments: "Track booking payments, revenue, and refund status.",
+    reviews: "Monitor customer feedback and package ratings.",
   };
 
   return (
@@ -469,6 +502,27 @@ export default function App() {
                 onStatusFilterChange={setCustomerStatusFilter}
                 sortBy={customerSort}
                 onSortChange={setCustomerSort}
+              />
+            </div>
+          )}
+
+          {/* 5. PAYMENTS VIEW */}
+          {activeTab === "payments" && (
+            <div className="space-y-6 animate-fade-in">
+              <PaymentSummary payments={payments} />
+              <PaymentTable
+                payments={payments}
+                onStatusChange={handlePaymentStatusChange}
+              />
+            </div>
+          )}
+
+          {/* 6. REVIEWS VIEW */}
+          {activeTab === "reviews" && (
+            <div className="space-y-6 animate-fade-in">
+              <ReviewList
+                reviews={reviews}
+                onStatusChange={handleReviewStatusChange}
               />
             </div>
           )}

@@ -53,3 +53,28 @@ export interface DashboardStats {
   totalPackages: number;
   pendingInquiries: number;
 }
+
+export type PaymentStatus = "Paid" | "Unpaid" | "Partial" | "Refunded";
+
+export interface PaymentRecord {
+  id: string;
+  bookingId: string;
+  customerName: string;
+  packageTitle: string;
+  amount: number;
+  method: string;
+  status: PaymentStatus;
+  date: string;
+}
+
+export type ReviewStatus = "Approved" | "Hidden" | "Pending";
+
+export interface Review {
+  id: string;
+  customerName: string;
+  packageTitle: string;
+  rating: number;
+  comment: string;
+  reviewDate: string;
+  status: ReviewStatus;
+}

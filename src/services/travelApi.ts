@@ -1,13 +1,17 @@
-import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag } from "../types/travel";
+import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
 import { mockPackages } from "../data/mockPackages";
 import { mockBookings } from "../data/mockBookings";
 import { mockStats } from "../data/mockStats";
 import { mockCustomers } from "../data/mockCustomers";
+import { mockPayments } from "../data/mockPayments";
+import { mockReviews } from "../data/mockReviews";
 
 // In-memory data store for the current browser session
 let sessionPackages = [...mockPackages];
 let sessionBookings = [...mockBookings];
 let sessionCustomers: Customer[] = mockCustomers.map(c => ({ ...c, notes: [...c.notes], tags: [...c.tags] }));
+let sessionPayments: PaymentRecord[] = [...mockPayments];
+let sessionReviews: Review[] = [...mockReviews];
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -149,6 +153,50 @@ export const travelApi = {
     return { ...sessionCustomers[index], notes: [...sessionCustomers[index].notes], tags: [...currentTags] };
   },
 
+  // --- Payment & Revenue API ---
+
+  async getPayments(): Promise<PaymentRecord[]> {
+    await delay(300);
+    return [...sessionPayments];
+  },
+
+  async updatePaymentStatus(id: string, status: PaymentStatus): Promise<PaymentRecord> {
+    await delay(200);
+    const index = sessionPayments.findIndex((payment) => payment.id === id);
+    if (index === -1) {
+      throw new Error(`Payment with ID ${id} not found`);
+    }
+
+    sessionPayments[index] = {
+      ...sessionPayments[index],
+      status,
+    };
+
+    return { ...sessionPayments[index] };
+  },
+
+  // --- Reviews API ---
+
+  async getReviews(): Promise<Review[]> {
+    await delay(300);
+    return [...sessionReviews];
+  },
+
+  async updateReviewStatus(id: string, status: ReviewStatus): Promise<Review> {
+    await delay(200);
+    const index = sessionReviews.findIndex((review) => review.id === id);
+    if (index === -1) {
+      throw new Error(`Review with ID ${id} not found`);
+    }
+
+    sessionReviews[index] = {
+      ...sessionReviews[index],
+      status,
+    };
+
+    return { ...sessionReviews[index] };
+  },
+
   // --- AI Insights API ---
   async getCustomerAiInsights(customerId: string): Promise<{
     travelPersona: string;
@@ -228,4 +276,3 @@ Mashrafe Elahi
 Travel Intelligence Team`;
   },
 };
-
