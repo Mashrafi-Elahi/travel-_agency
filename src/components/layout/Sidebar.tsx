@@ -1,4 +1,5 @@
-import { LayoutDashboard, Compass, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut, MessageSquare } from "lucide-react";
+import React from "react";
+import { LayoutDashboard, Compass, MapPinned, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut, MessageSquare } from "lucide-react";
 
 export type SidebarTab = "overview" | "packages" | "destinations" | "bookings" | "customers" | "inquiries";
 
@@ -22,7 +23,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     {
       id: "destinations" as SidebarTab,
       label: "Destinations",
-      icon: <Compass className="w-5 h-5" />,
+      icon: <MapPinned className="w-5 h-5" />,
     },
     {
       id: "bookings" as SidebarTab,
