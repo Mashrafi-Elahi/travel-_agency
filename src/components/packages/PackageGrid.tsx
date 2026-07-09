@@ -12,7 +12,7 @@ export default function PackageGrid({ packages, onResetFilters }: PackageGridPro
   if (packages.length === 0) {
     return (
       <EmptyState
-        title="No packages match"
+        title="No packages found"
         description="Try relaxing your search terms or picking a different category and status to view the packages."
         actionLabel="Clear Filters"
         onAction={onResetFilters}
