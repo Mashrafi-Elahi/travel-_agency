@@ -5,6 +5,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import DashboardStats from "../components/dashboard/DashboardStats";
 import PackageFilter from "../components/packages/PackageFilter";
 import PackageGrid from "../components/packages/PackageGrid";
+import DestinationManager from "../components/destinations/DestinationManager";
 import BookingTable from "../components/bookings/BookingTable";
 import StatusBadge from "../components/bookings/StatusBadge";
 import CustomerStats from "../components/customers/CustomerStats";
@@ -15,45 +16,8 @@ import PaymentTable from "../components/payments/PaymentTable";
 import ReviewList from "../components/reviews/ReviewList";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, Inquiry, InquiryStatus, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
-import { Compass, CalendarDays, Plus, RefreshCw, Layers, X, Users, MessageSquare } from "lucide-react";
-import InquiryTable from "../components/inquiries/InquiryTable";
-import InquiryDetailModal from "../components/inquiries/InquiryDetailModal";
-import { mockStaff } from "../data/mockInquiries";
-
-type PackageModalMode = "create" | "edit";
-
-interface PackageFormState {
-  title: string;
-  destination: string;
-  category: string;
-  price: string;
-  duration: string;
-  image: string;
-  rating: string;
-  status: PackageStatus;
-  description: string;
-}
-
-const packageImageByCategory: Record<string, string> = {
-  Beach: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
-  Mountain: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=800&q=80",
-  Adventure: "https://images.unsplash.com/photo-1533240332313-0db49b439ad3?auto=format&fit=crop&w=800&q=80",
-  Cultural: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-  "City Break": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=800&q=80",
-};
-
-const createPackageForm = (category = "Beach"): PackageFormState => ({
-  title: "",
-  destination: "",
-  category,
-  price: "",
-  duration: "7 days",
-  image: packageImageByCategory[category] || packageImageByCategory.Beach,
-  rating: "4.8",
-  status: "Active",
-  description: "",
-});
+import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag } from "../types/travel";
+import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users } from "lucide-react";
 
 export default function App() {
   // Navigation tab state
@@ -259,7 +223,7 @@ export default function App() {
 
   const statuses: PackageStatus[] = ["Active", "Inactive", "Draft"];
 
-  // Handle adding a mock new package (extends the in-memory array)
+  // Handle create/edit package submit
   const handlePackageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!packageForm.title.trim() || !packageForm.destination.trim() || !packageForm.price.trim()) {
@@ -284,51 +248,49 @@ export default function App() {
       return;
     }
 
+    const nextPackage: TravelPackage = {
+      id: editingPackageId || `pkg-${Date.now()}`,
+      title: packageForm.title.trim(),
+      destination: packageForm.destination.trim(),
+      category: packageForm.category,
+      image: packageForm.image.trim(),
+      price: priceNum,
+      duration: packageForm.duration,
+      rating: ratingNum,
+      status: packageForm.status,
+      description: packageForm.description.trim(),
+    };
+
     setIsSavingPackage(true);
-
     try {
-      const payload = {
-        title: packageForm.title.trim(),
-        destination: packageForm.destination.trim(),
-        category: packageForm.category,
-        image: packageForm.image.trim() || packageImageByCategory[packageForm.category] || packageImageByCategory.Beach,
-        price: priceNum,
-        duration: packageForm.duration.trim(),
-        rating: ratingNum,
-        status: packageForm.status,
-        description: packageForm.description.trim(),
-      };
-
-      if (packageModalMode === "edit" && editingPackageId) {
-        const updated = await travelApi.updatePackage(editingPackageId, payload);
-        setPackages((prev) => prev.map((pkg) => (pkg.id === editingPackageId ? updated : pkg)));
+      if (packageModalMode === "edit") {
+        setPackages((prev) =>
+          prev.map((pkg) => (pkg.id === nextPackage.id ? nextPackage : pkg))
+        );
       } else {
-        const created = await travelApi.addPackage(payload);
-        setPackages((prev) => [created, ...prev]);
+        await travelApi.addPackage(nextPackage);
+        setPackages((prev) => [nextPackage, ...prev]);
       }
 
       await syncStats();
       closePackageModal();
-    } catch (err) {
-      alert("Failed to save package. Please try again.");
+    } catch (error) {
+      alert(
+        packageModalMode === "edit"
+          ? "Failed to update package. Please try again."
+          : "Failed to add package. Please try again."
+      );
     } finally {
       setIsSavingPackage(false);
     }
   };
 
   const handleDeletePackage = async (pkg: TravelPackage) => {
-    const confirmed = window.confirm(`Delete \"${pkg.title}\"? This package will be removed from the catalog.`);
-    if (!confirmed) {
-      return;
-    }
+    const confirmed = window.confirm(`Delete package \"${pkg.title}\"?`);
+    if (!confirmed) return;
 
-    try {
-      await travelApi.deletePackage(pkg.id);
-      setPackages((prev) => prev.filter((item) => item.id !== pkg.id));
-      await syncStats();
-    } catch (err) {
-      alert("Failed to delete package. Please try again.");
-    }
+    setPackages((prev) => prev.filter((item) => item.id !== pkg.id));
+    await syncStats();
   };
 
   // Reset filters
@@ -435,7 +397,8 @@ export default function App() {
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
-    bookings: "Bookings Manager",
+    destinations: "Destination Management",
+    bookings: "Bookings & Inquiries Manager",
     inquiries: "Inquiry Management",
     customers: "Customer Management",
     payments: "Payments & Revenue",
@@ -448,8 +411,6 @@ export default function App() {
     bookings: "Manage customer reservations, track departures, and confirm payments",
     inquiries: "Review client inquiries before booking, assign staff, and convert hot leads to bookings",
     customers: "View customer profiles, booking history, and manage notes",
-    payments: "Track booking payments, revenue, and refund status.",
-    reviews: "Monitor customer feedback and package ratings.",
   };
 
   return (
@@ -665,21 +626,6 @@ export default function App() {
             </div>
           )}
 
-          {/* 4. INQUIRIES VIEW */}
-          {activeTab === "inquiries" && (
-            <div className="space-y-6 animate-fade-in">
-              <InquiryTable
-                inquiries={inquiries}
-                staffList={mockStaff}
-                onStatusChange={handleUpdateInquiryStatus}
-                onAssignStaff={handleAssignInquiry}
-                onConvert={handleConvertInquiry}
-                onViewDetails={(inq) => setSelectedInquiry(inq)}
-                isUpdating={isUpdating}
-              />
-            </div>
-          )}
-
           {/* 4. CUSTOMERS VIEW */}
           {activeTab === "customers" && (
             <div className="space-y-6 animate-fade-in">
@@ -704,27 +650,6 @@ export default function App() {
                 onStatusFilterChange={setCustomerStatusFilter}
                 sortBy={customerSort}
                 onSortChange={setCustomerSort}
-              />
-            </div>
-          )}
-
-          {/* 5. PAYMENTS VIEW */}
-          {activeTab === "payments" && (
-            <div className="space-y-6 animate-fade-in">
-              <PaymentSummary payments={payments} />
-              <PaymentTable
-                payments={payments}
-                onStatusChange={handlePaymentStatusChange}
-              />
-            </div>
-          )}
-
-          {/* 6. REVIEWS VIEW */}
-          {activeTab === "reviews" && (
-            <div className="space-y-6 animate-fade-in">
-              <ReviewList
-                reviews={reviews}
-                onStatusChange={handleReviewStatusChange}
               />
             </div>
           )}

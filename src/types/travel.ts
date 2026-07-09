@@ -15,6 +15,16 @@ export interface TravelPackage {
   description: string;
 }
 
+export interface Destination {
+  id: string;
+  name: string;
+  country: string;
+  image: string;
+  description: string;
+  packageCount: number;
+  popular: boolean;
+}
+
 export interface BookingInquiry {
   id: string;
   customerName: string;
@@ -30,19 +40,25 @@ export interface BookingInquiry {
   paymentStatus: PaymentStatus;
 }
 
-export type InquiryStatus = "New" | "Contacted" | "Follow-up" | "Converted" | "Closed";
+export interface PaymentRecord {
+  id: string;
+  bookingId: string;
+  customerName: string;
+  packageTitle: string;
+  amount: number;
+  method: string;
+  status: PaymentStatus;
+  date: string;
+}
 
-export interface Inquiry {
+export interface Review {
   id: string;
   customerName: string;
-  email: string;
-  phone: string;
-  interestedPackage: string;
-  destination: string;
-  message: string;
-  date: string;
-  status: InquiryStatus;
-  assignedStaff?: string;
+  packageTitle: string;
+  rating: number;
+  comment: string;
+  reviewDate: string;
+  status: ReviewStatus;
 }
 
 export type CustomerStatus = "Active" | "Suspended" | "Banned";

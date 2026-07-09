@@ -1,4 +1,16 @@
-import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, Inquiry, InquiryStatus, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
+import {
+  TravelPackage,
+  BookingInquiry,
+  DashboardStats,
+  BookingStatus,
+  Customer,
+  CustomerNote,
+  CustomerStatus,
+  CustomerTag,
+  Destination,
+  PaymentRecord,
+  Review,
+} from "../types/travel";
 import { mockPackages } from "../data/mockPackages";
 import { mockBookings } from "../data/mockBookings";
 import { mockStats } from "../data/mockStats";
@@ -6,14 +18,15 @@ import { mockCustomers } from "../data/mockCustomers";
 import { mockPayments } from "../data/mockPayments";
 import { mockReviews } from "../data/mockReviews";
 import { mockInquiries } from "../data/mockInquiries";
+import { mockDestinations } from "../data/mockDestinations";
 
 // In-memory data store for the current browser session
 let sessionPackages = [...mockPackages];
 let sessionBookings = [...mockBookings];
 let sessionCustomers: Customer[] = mockCustomers.map(c => ({ ...c, notes: [...c.notes], tags: [...c.tags] }));
-let sessionPayments: PaymentRecord[] = [...mockPayments];
-let sessionReviews: Review[] = [...mockReviews];
-let sessionInquiries: Inquiry[] = [...mockInquiries];
+let sessionDestinations: Destination[] = [];
+let sessionPayments: PaymentRecord[] = [];
+let sessionReviews: Review[] = [];
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -49,44 +62,52 @@ export const travelApi = {
     return [...sessionPackages];
   },
 
-  async addPackage(pkg: Omit<TravelPackage, "id">): Promise<TravelPackage> {
-    await delay(250);
-    const newPackage: TravelPackage = {
-      id: `pkg-${Date.now()}`,
-      ...pkg,
-    };
-    sessionPackages = [newPackage, ...sessionPackages];
-    return { ...newPackage };
-  },
-
-  async updatePackage(id: string, changes: Partial<Omit<TravelPackage, "id">>): Promise<TravelPackage> {
-    await delay(250);
-    const index = sessionPackages.findIndex((pkg) => pkg.id === id);
-    if (index === -1) {
-      throw new Error(`Package with ID ${id} not found`);
-    }
-
-    sessionPackages[index] = {
-      ...sessionPackages[index],
-      ...changes,
-    };
-
-    return { ...sessionPackages[index] };
-  },
-
-  async deletePackage(id: string): Promise<void> {
+  async addPackage(pkg: TravelPackage): Promise<TravelPackage> {
     await delay(200);
-    const index = sessionPackages.findIndex((pkg) => pkg.id === id);
-    if (index === -1) {
-      throw new Error(`Package with ID ${id} not found`);
+    const createdPackage = { ...pkg };
+    sessionPackages = [createdPackage, ...sessionPackages];
+
+    const destinationExists = sessionDestinations.some(
+      (destination) => destinationKey(`${destination.city}, ${destination.country}`) === destinationKey(createdPackage.destination)
+    );
+
+    if (!destinationExists) {
+      const parsed = parsePackageDestination(createdPackage.destination);
+      sessionDestinations = [
+        {
+          id: `dest-${Date.now()}`,
+          name: createdPackage.destination,
+          city: parsed.city,
+          country: parsed.country,
+          image: createdPackage.image,
+          description: `Auto-created destination linked to ${createdPackage.title}.`,
+          popular: false,
+        },
+        ...sessionDestinations,
+      ];
     }
 
-    sessionPackages = sessionPackages.filter((pkg) => pkg.id !== id);
+    return createdPackage;
   },
 
   async getBookings(): Promise<BookingInquiry[]> {
     await delay(300);
     return [...sessionBookings];
+  },
+
+  async getDestinations(): Promise<Destination[]> {
+    await delay(250);
+    return sessionDestinations.map((destination) => ({ ...destination }));
+  },
+
+  async getPayments(): Promise<PaymentRecord[]> {
+    await delay(250);
+    return sessionPayments.map((payment) => ({ ...payment }));
+  },
+
+  async getReviews(): Promise<Review[]> {
+    await delay(250);
+    return sessionReviews.map((review) => ({ ...review }));
   },
 
   async updateBookingStatus(id: string, status: BookingStatus): Promise<BookingInquiry> {
