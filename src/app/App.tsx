@@ -9,44 +9,16 @@ import BookingTable from "../components/bookings/BookingTable";
 import CustomerStats from "../components/customers/CustomerStats";
 import CustomerTable from "../components/customers/CustomerTable";
 import CustomerProfile from "../components/customers/CustomerProfile";
+import PaymentSummary from "../components/payments/PaymentSummary";
+import PaymentTable from "../components/payments/PaymentTable";
+import ReviewList from "../components/reviews/ReviewList";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag } from "../types/travel";
-import { Compass, CalendarDays, Plus, RefreshCw, X, Users, MapPinned, CreditCard, Star, ListChecks } from "lucide-react";
-
-interface ModulePlaceholderProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  checklist: string[];
-}
-
-function ModulePlaceholder({ icon, title, description, checklist }: ModulePlaceholderProps) {
-  return (
-    <div className="animate-fade-in bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-      <div className="p-6 lg:p-8 border-b border-slate-100 flex flex-col sm:flex-row sm:items-start gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-          {icon}
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-slate-900 font-display">{title}</h3>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">{description}</p>
-        </div>
-      </div>
-
-      <div className="p-6 lg:p-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {checklist.map((item) => (
-            <div key={item} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
-              <ListChecks className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
-              <span className="text-sm font-medium text-slate-700">{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, Inquiry, InquiryStatus, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
+import { Compass, CalendarDays, Plus, RefreshCw, Layers, X, Users, MessageSquare } from "lucide-react";
+import InquiryTable from "../components/inquiries/InquiryTable";
+import InquiryDetailModal from "../components/inquiries/InquiryDetailModal";
+import { mockStaff } from "../data/mockInquiries";
 
 type PackageModalMode = "create" | "edit";
 
@@ -91,6 +63,10 @@ export default function App() {
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [bookings, setBookings] = useState<BookingInquiry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filter/Search states
@@ -117,16 +93,22 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsData, packagesData, bookingsData, customersData] = await Promise.all([
+      const [statsData, packagesData, bookingsData, customersData, inquiriesData, paymentsData, reviewsData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
         travelApi.getCustomers(),
+        travelApi.getInquiries(),
+        travelApi.getPayments(),
+        travelApi.getReviews(),
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
       setCustomers(customersData);
+      setInquiries(inquiriesData);
+      setPayments(paymentsData);
+      setReviews(reviewsData);
     } catch (err) {
       console.error("Error loading travel agency data:", err);
     } finally {
@@ -206,6 +188,62 @@ export default function App() {
       await syncStats();
     } catch (err) {
       alert("Failed to update booking status. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  // --- Inquiry Handlers ---
+
+  const handleUpdateInquiryStatus = async (id: string, newStatus: InquiryStatus) => {
+    setIsUpdating(id);
+    try {
+      const updated = await travelApi.updateInquiryStatus(id, newStatus);
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? updated : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? updated : prev));
+      await syncStats();
+    } catch (err) {
+      alert("Failed to update inquiry status. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleAssignInquiry = async (id: string, staffName: string) => {
+    setIsUpdating(id);
+    try {
+      const updated = await travelApi.assignInquiry(id, staffName);
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? updated : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? updated : prev));
+    } catch (err) {
+      alert("Failed to assign staff to inquiry. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleConvertInquiry = async (id: string) => {
+    setIsUpdating(id);
+    try {
+      const result = await travelApi.convertInquiryToBooking(id);
+      
+      // Update inquiries state (the status changed to "Converted")
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? result.inquiry : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? result.inquiry : prev));
+      
+      // Add the new booking
+      setBookings((prev) => [result.booking, ...prev]);
+      
+      // Sync dashboard stats
+      await syncStats();
+
+      // Refresh customers list if we auto-created a customer
+      const customersData = await travelApi.getCustomers();
+      setCustomers(customersData);
+
+      alert(`Successfully converted inquiry to a pending booking! Booking ID: ${result.booking.id}`);
+    } catch (err) {
+      alert("Failed to convert inquiry to booking. Please try again.");
     } finally {
       setIsUpdating(null);
     }
@@ -368,12 +406,32 @@ export default function App() {
     setSelectedCustomer((prev) => prev && prev.id === customerId ? updated : prev);
   };
 
+  // Handle changing payment settlement status
+  const handlePaymentStatusChange = async (id: string, status: PaymentStatus) => {
+    try {
+      const updated = await travelApi.updatePaymentStatus(id, status);
+      setPayments((prev) => prev.map((payment) => payment.id === id ? updated : payment));
+    } catch (err) {
+      alert("Failed to update payment status. Please try again.");
+    }
+  };
+
+  // Handle approving or hiding customer reviews
+  const handleReviewStatusChange = async (id: string, status: ReviewStatus) => {
+    try {
+      const updated = await travelApi.updateReviewStatus(id, status);
+      setReviews((prev) => prev.map((review) => review.id === id ? updated : review));
+    } catch (err) {
+      alert("Failed to update review status. Please try again.");
+    }
+  };
+
   // Render variables depending on activeTab
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
-    destinations: "Destination Management",
-    bookings: "Bookings & Inquiries Manager",
+    bookings: "Bookings Manager",
+    inquiries: "Inquiry Management",
     customers: "Customer Management",
     payments: "Payments & Revenue",
     reviews: "Reviews & Ratings",
@@ -382,11 +440,11 @@ export default function App() {
   const headerSubtitleMap: Record<SidebarTab, string> = {
     overview: "Real-time summary of sales, listings performance, and support inquiries",
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
-    destinations: "Curate city and country destinations, popularity flags, and package availability",
     bookings: "Manage customer reservations, track departures, and confirm payments",
+    inquiries: "Review client inquiries before booking, assign staff, and convert hot leads to bookings",
     customers: "View customer profiles, booking history, and manage notes",
-    payments: "Track paid, unpaid, partial, and refunded booking revenue",
-    reviews: "Monitor package feedback, ratings, and review visibility",
+    payments: "Track booking payments, revenue, and refund status.",
+    reviews: "Monitor customer feedback and package ratings.",
   };
 
   return (
@@ -544,21 +602,7 @@ export default function App() {
             </div>
           )}
 
-          {/* 3. DESTINATIONS VIEW PLACEHOLDER */}
-          {activeTab === "destinations" && (
-            <ModulePlaceholder
-              icon={<MapPinned className="w-6 h-6" />}
-              title="Destination Management Module"
-              description="Ready for the destination owner to add searchable country/city cards, package counts, and popular destination controls."
-              checklist={[
-                "Create destination mock data",
-                "Add search and popular filter",
-                "Connect popular toggle to mock API",
-              ]}
-            />
-          )}
-
-          {/* 4. BOOKINGS VIEW */}
+          {/* 3. BOOKINGS VIEW */}
           {activeTab === "bookings" && (
             <div className="space-y-6 animate-fade-in">
               {/* Bookings Filters Row */}
@@ -606,7 +650,22 @@ export default function App() {
             </div>
           )}
 
-          {/* 5. CUSTOMERS VIEW */}
+          {/* 4. INQUIRIES VIEW */}
+          {activeTab === "inquiries" && (
+            <div className="space-y-6 animate-fade-in">
+              <InquiryTable
+                inquiries={inquiries}
+                staffList={mockStaff}
+                onStatusChange={handleUpdateInquiryStatus}
+                onAssignStaff={handleAssignInquiry}
+                onConvert={handleConvertInquiry}
+                onViewDetails={(inq) => setSelectedInquiry(inq)}
+                isUpdating={isUpdating}
+              />
+            </div>
+          )}
+
+          {/* 4. CUSTOMERS VIEW */}
           {activeTab === "customers" && (
             <div className="space-y-6 animate-fade-in">
               <CustomerStats customers={customers} />
@@ -634,32 +693,25 @@ export default function App() {
             </div>
           )}
 
-          {/* 6. PAYMENTS VIEW PLACEHOLDER */}
+          {/* 5. PAYMENTS VIEW */}
           {activeTab === "payments" && (
-            <ModulePlaceholder
-              icon={<CreditCard className="w-6 h-6" />}
-              title="Payment & Revenue Module"
-              description="Ready for the payments owner to add revenue summary cards, payment records, status filters, and refund tracking."
-              checklist={[
-                "Create payment mock data",
-                "Add revenue summary cards",
-                "Build filterable payment table",
-              ]}
-            />
+            <div className="space-y-6 animate-fade-in">
+              <PaymentSummary payments={payments} />
+              <PaymentTable
+                payments={payments}
+                onStatusChange={handlePaymentStatusChange}
+              />
+            </div>
           )}
 
-          {/* 7. REVIEWS VIEW PLACEHOLDER */}
+          {/* 6. REVIEWS VIEW */}
           {activeTab === "reviews" && (
-            <ModulePlaceholder
-              icon={<Star className="w-6 h-6" />}
-              title="Review & Rating Module"
-              description="Ready for the reviews owner to add customer feedback, average rating stats, and approve/hide review actions."
-              checklist={[
-                "Create review mock data",
-                "Add rating and status filters",
-                "Build approve or hide actions",
-              ]}
-            />
+            <div className="space-y-6 animate-fade-in">
+              <ReviewList
+                reviews={reviews}
+                onStatusChange={handleReviewStatusChange}
+              />
+            </div>
           )}
         </>
       )}
@@ -881,6 +933,19 @@ export default function App() {
           onStatusChange={handleCustomerStatusChange}
           onDelete={handleDeleteCustomer}
           onTagToggle={handleToggleCustomerTag}
+        />
+      )}
+
+      {/* --- INQUIRY DETAILS MODAL --- */}
+      {selectedInquiry && (
+        <InquiryDetailModal
+          inquiry={selectedInquiry}
+          staffList={mockStaff}
+          onStatusChange={handleUpdateInquiryStatus}
+          onAssignStaff={handleAssignInquiry}
+          onConvert={handleConvertInquiry}
+          onClose={() => setSelectedInquiry(null)}
+          isUpdating={isUpdating === selectedInquiry.id}
         />
       )}
     </DashboardLayout>
