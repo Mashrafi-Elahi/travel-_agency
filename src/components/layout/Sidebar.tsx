@@ -1,7 +1,7 @@
 import React from "react";
-import { LayoutDashboard, Compass, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Compass, Receipt, Users, Settings, HelpCircle, LogOut, CreditCard, MessageSquare } from "lucide-react";
 
-export type SidebarTab = "overview" | "packages" | "bookings" | "customers";
+export type SidebarTab = "overview" | "packages" | "bookings" | "customers" | "inquiries" | "payments" | "reviews";
 
 interface SidebarProps {
   activeTab: SidebarTab;
@@ -22,13 +22,28 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     },
     {
       id: "bookings" as SidebarTab,
-      label: "Bookings & Inquiries",
+      label: "Bookings Manager",
       icon: <Receipt className="w-5 h-5" />,
+    },
+    {
+      id: "inquiries" as SidebarTab,
+      label: "Inquiry Management",
+      icon: <MessageSquare className="w-5 h-5" />,
     },
     {
       id: "customers" as SidebarTab,
       label: "Customer Records",
       icon: <Users className="w-5 h-5" />,
+    },
+    {
+      id: "payments" as SidebarTab,
+      label: "Payments",
+      icon: <CreditCard className="w-5 h-5" />,
+    },
+    {
+      id: "reviews" as SidebarTab,
+      label: "Reviews",
+      icon: <MessageSquare className="w-5 h-5" />,
     },
   ];
 

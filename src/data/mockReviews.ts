@@ -1,0 +1,58 @@
+import { Review } from "../types/travel";
+
+export const mockReviews: Review[] = [
+  {
+    id: "rev-001",
+    customerName: "Ariana Patel",
+    packageTitle: "Santorini Sunset Escape",
+    rating: 5,
+    comment: "Beautifully coordinated itinerary, responsive guides, and the sunset cruise was the highlight of our summer.",
+    reviewDate: "2026-06-25",
+    status: "Approved",
+  },
+  {
+    id: "rev-002",
+    customerName: "Marcus Johnson",
+    packageTitle: "Swiss Alps Rail Adventure",
+    rating: 4,
+    comment: "The train routes were stunning and hotels were solid. A clearer luggage transfer note would make it perfect.",
+    reviewDate: "2026-06-29",
+    status: "Pending",
+  },
+  {
+    id: "rev-003",
+    customerName: "Nadia Rahman",
+    packageTitle: "Kyoto Cultural Discovery",
+    rating: 5,
+    comment: "Our tea ceremony host and temple walk were unforgettable. Everything felt thoughtful and unrushed.",
+    reviewDate: "2026-07-02",
+    status: "Approved",
+  },
+  {
+    id: "rev-004",
+    customerName: "Sofia Martinez",
+    packageTitle: "Marrakech Market Trails",
+    rating: 3,
+    comment: "Great guide, but one riad check-in was delayed and the transfer timing could be improved.",
+    reviewDate: "2026-07-03",
+    status: "Hidden",
+  },
+  {
+    id: "rev-005",
+    customerName: "Ethan Wilson",
+    packageTitle: "Patagonia Trekking Expedition",
+    rating: 5,
+    comment: "Excellent prep notes, expert trek leaders, and exactly the level of challenge we wanted.",
+    reviewDate: "2026-07-07",
+    status: "Pending",
+  },
+  {
+    id: "rev-006",
+    customerName: "Laila Chowdhury",
+    packageTitle: "Bali Wellness Week",
+    rating: 4,
+    comment: "Lovely resort and spa program. I would have liked more optional local food experiences.",
+    reviewDate: "2026-07-08",
+    status: "Approved",
+  },
+];
