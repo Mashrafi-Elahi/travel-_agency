@@ -5,6 +5,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import DashboardStats from "../components/dashboard/DashboardStats";
 import PackageFilter from "../components/packages/PackageFilter";
 import PackageGrid from "../components/packages/PackageGrid";
+import DestinationManager from "../components/destinations/DestinationManager";
 import BookingTable from "../components/bookings/BookingTable";
 import CustomerStats from "../components/customers/CustomerStats";
 import CustomerTable from "../components/customers/CustomerTable";
@@ -113,7 +114,7 @@ export default function App() {
   const statuses: PackageStatus[] = ["Active", "Inactive", "Draft"];
 
   // Handle adding a mock new package (extends the in-memory array)
-  const handleAddPackageSubmit = (e: React.FormEvent) => {
+  const handleAddPackageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPkgTitle || !newPkgDest || !newPkgPrice) {
       alert("Please fill in all fields.");
@@ -146,19 +147,25 @@ export default function App() {
       status: newPkgStatus,
     };
 
-    // Update state directly
-    setPackages((prev) => [newPackage, ...prev]);
-    
-    // Increment total packages counter
-    setStats((prev) => prev ? { ...prev, totalPackages: prev.totalPackages + 1 } : null);
+    try {
+      await travelApi.addPackage(newPackage);
 
-    // Reset form & close modal
-    setNewPkgTitle("");
-    setNewPkgDest("");
-    setNewPkgCat("Beach");
-    setNewPkgPrice("");
-    setNewPkgStatus("Active");
-    setShowAddModal(false);
+      // Update state directly
+      setPackages((prev) => [newPackage, ...prev]);
+
+      // Refresh totals so the dashboard and destination counts stay aligned with the shared store
+      await syncStats();
+
+      // Reset form & close modal
+      setNewPkgTitle("");
+      setNewPkgDest("");
+      setNewPkgCat("Beach");
+      setNewPkgPrice("");
+      setNewPkgStatus("Active");
+      setShowAddModal(false);
+    } catch (error) {
+      alert("Failed to add package. Please try again.");
+    }
   };
 
   // Reset filters
@@ -243,6 +250,7 @@ export default function App() {
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
+    destinations: "Destination Management",
     bookings: "Bookings & Inquiries Manager",
     customers: "Customer Management",
   };
@@ -250,6 +258,7 @@ export default function App() {
   const headerSubtitleMap: Record<SidebarTab, string> = {
     overview: "Real-time summary of sales, listings performance, and support inquiries",
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
+    destinations: "Create, search, and curate the destination catalog with popular flags and package counts",
     bookings: "Manage customer reservations, track departures, and confirm payments",
     customers: "View customer profiles, booking history, and manage notes",
   };
@@ -397,7 +406,10 @@ export default function App() {
             </div>
           )}
 
-          {/* 3. BOOKINGS VIEW */}
+          {/* 3. DESTINATIONS VIEW */}
+          {activeTab === "destinations" && <DestinationManager />}
+
+          {/* 4. BOOKINGS VIEW */}
           {activeTab === "bookings" && (
             <div className="space-y-6 animate-fade-in">
               {/* Bookings Filters Row */}
@@ -445,7 +457,7 @@ export default function App() {
             </div>
           )}
 
-          {/* 4. CUSTOMERS VIEW */}
+          {/* 5. CUSTOMERS VIEW */}
           {activeTab === "customers" && (
             <div className="space-y-6 animate-fade-in">
               <CustomerStats customers={customers} />

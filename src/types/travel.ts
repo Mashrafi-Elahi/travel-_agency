@@ -1,6 +1,17 @@
 export type PackageStatus = "Active" | "Inactive" | "Draft";
 export type BookingStatus = "Pending" | "Confirmed" | "Cancelled" | "Completed";
 
+export interface Destination {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  image: string;
+  description: string;
+  popular: boolean;
+  availablePackages?: number;
+}
+
 export interface TravelPackage {
   id: string;
   title: string;
