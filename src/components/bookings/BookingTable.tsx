@@ -14,7 +14,7 @@ export default function BookingTable({ bookings, onStatusChange, isUpdating }: B
   if (bookings.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-slate-100 shadow-xs">
-        <p className="text-slate-500 text-sm">No bookings or inquiries found.</p>
+        <p className="text-slate-500 text-sm">No bookings or inquiries found!.</p>
       </div>
     );
   }
