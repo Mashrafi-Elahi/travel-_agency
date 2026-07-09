@@ -21,6 +21,21 @@ export interface BookingInquiry {
   status: BookingStatus;
 }
 
+export type InquiryStatus = "New" | "Contacted" | "Follow-up" | "Converted" | "Closed";
+
+export interface Inquiry {
+  id: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  interestedPackage: string;
+  destination: string;
+  message: string;
+  date: string;
+  status: InquiryStatus;
+  assignedStaff?: string;
+}
+
 export type CustomerStatus = "Active" | "Suspended" | "Banned";
 export type CustomerTag = "VIP" | "Frequent" | "New" | "At-Risk" | "Corporate";
 

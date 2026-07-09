@@ -11,8 +11,11 @@ import CustomerTable from "../components/customers/CustomerTable";
 import CustomerProfile from "../components/customers/CustomerProfile";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag } from "../types/travel";
-import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users } from "lucide-react";
+import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, Inquiry, InquiryStatus } from "../types/travel";
+import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users, MessageSquare } from "lucide-react";
+import InquiryTable from "../components/inquiries/InquiryTable";
+import InquiryDetailModal from "../components/inquiries/InquiryDetailModal";
+import { mockStaff } from "../data/mockInquiries";
 
 export default function App() {
   // Navigation tab state
@@ -23,6 +26,8 @@ export default function App() {
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [bookings, setBookings] = useState<BookingInquiry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filter/Search states
@@ -53,16 +58,18 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsData, packagesData, bookingsData, customersData] = await Promise.all([
+      const [statsData, packagesData, bookingsData, customersData, inquiriesData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
         travelApi.getCustomers(),
+        travelApi.getInquiries(),
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
       setCustomers(customersData);
+      setInquiries(inquiriesData);
     } catch (err) {
       console.error("Error loading travel agency data:", err);
     } finally {
@@ -100,6 +107,62 @@ export default function App() {
       await syncStats();
     } catch (err) {
       alert("Failed to update booking status. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  // --- Inquiry Handlers ---
+
+  const handleUpdateInquiryStatus = async (id: string, newStatus: InquiryStatus) => {
+    setIsUpdating(id);
+    try {
+      const updated = await travelApi.updateInquiryStatus(id, newStatus);
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? updated : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? updated : prev));
+      await syncStats();
+    } catch (err) {
+      alert("Failed to update inquiry status. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleAssignInquiry = async (id: string, staffName: string) => {
+    setIsUpdating(id);
+    try {
+      const updated = await travelApi.assignInquiry(id, staffName);
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? updated : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? updated : prev));
+    } catch (err) {
+      alert("Failed to assign staff to inquiry. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleConvertInquiry = async (id: string) => {
+    setIsUpdating(id);
+    try {
+      const result = await travelApi.convertInquiryToBooking(id);
+      
+      // Update inquiries state (the status changed to "Converted")
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? result.inquiry : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? result.inquiry : prev));
+      
+      // Add the new booking
+      setBookings((prev) => [result.booking, ...prev]);
+      
+      // Sync dashboard stats
+      await syncStats();
+
+      // Refresh customers list if we auto-created a customer
+      const customersData = await travelApi.getCustomers();
+      setCustomers(customersData);
+
+      alert(`Successfully converted inquiry to a pending booking! Booking ID: ${result.booking.id}`);
+    } catch (err) {
+      alert("Failed to convert inquiry to booking. Please try again.");
     } finally {
       setIsUpdating(null);
     }
@@ -243,7 +306,8 @@ export default function App() {
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
-    bookings: "Bookings & Inquiries Manager",
+    bookings: "Bookings Manager",
+    inquiries: "Inquiry Management",
     customers: "Customer Management",
   };
 
@@ -251,6 +315,7 @@ export default function App() {
     overview: "Real-time summary of sales, listings performance, and support inquiries",
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
     bookings: "Manage customer reservations, track departures, and confirm payments",
+    inquiries: "Review client inquiries before booking, assign staff, and convert hot leads to bookings",
     customers: "View customer profiles, booking history, and manage notes",
   };
 
@@ -445,6 +510,21 @@ export default function App() {
             </div>
           )}
 
+          {/* 4. INQUIRIES VIEW */}
+          {activeTab === "inquiries" && (
+            <div className="space-y-6 animate-fade-in">
+              <InquiryTable
+                inquiries={inquiries}
+                staffList={mockStaff}
+                onStatusChange={handleUpdateInquiryStatus}
+                onAssignStaff={handleAssignInquiry}
+                onConvert={handleConvertInquiry}
+                onViewDetails={(inq) => setSelectedInquiry(inq)}
+                isUpdating={isUpdating}
+              />
+            </div>
+          )}
+
           {/* 4. CUSTOMERS VIEW */}
           {activeTab === "customers" && (
             <div className="space-y-6 animate-fade-in">
@@ -610,6 +690,19 @@ export default function App() {
           onStatusChange={handleCustomerStatusChange}
           onDelete={handleDeleteCustomer}
           onTagToggle={handleToggleCustomerTag}
+        />
+      )}
+
+      {/* --- INQUIRY DETAILS MODAL --- */}
+      {selectedInquiry && (
+        <InquiryDetailModal
+          inquiry={selectedInquiry}
+          staffList={mockStaff}
+          onStatusChange={handleUpdateInquiryStatus}
+          onAssignStaff={handleAssignInquiry}
+          onConvert={handleConvertInquiry}
+          onClose={() => setSelectedInquiry(null)}
+          isUpdating={isUpdating === selectedInquiry.id}
         />
       )}
     </DashboardLayout>
