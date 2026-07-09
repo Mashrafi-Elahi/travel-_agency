@@ -32,6 +32,7 @@ export default function App() {
 
   const [bookingSearch, setBookingSearch] = useState<string>("");
   const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("All");
+  const [bookingDateFilter, setBookingDateFilter] = useState<string>("");
 
   const [customerSearch, setCustomerSearch] = useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -41,6 +42,7 @@ export default function App() {
   // Operation states
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [selectedBooking, setSelectedBooking] = useState<BookingInquiry | null>(null);
 
   // New package form states
   const [newPkgTitle, setNewPkgTitle] = useState("");
@@ -191,9 +193,11 @@ export default function App() {
         b.destination.toLowerCase().includes(bookingSearch.toLowerCase());
       const matchesStatus =
         bookingStatusFilter === "All" || b.status === bookingStatusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesDate =
+        !bookingDateFilter || b.date === bookingDateFilter || b.travelDate === bookingDateFilter;
+      return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [bookings, bookingSearch, bookingStatusFilter]);
+  }, [bookings, bookingSearch, bookingStatusFilter, bookingDateFilter]);
 
   // Filter customers based on search query and status
   const filteredCustomers = useMemo(() => {
@@ -408,7 +412,16 @@ export default function App() {
                   placeholder="Search customer, package title, or destination..."
                 />
 
-                <div className="flex items-center gap-3 self-start md:self-auto">
+                <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+                  <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    <span>Date</span>
+                    <input
+                      type="date"
+                      value={bookingDateFilter}
+                      onChange={(e) => setBookingDateFilter(e.target.value)}
+                      className="rounded-lg border border-slate-200 px-2.5 py-2 text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                    />
+                  </label>
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Status Group:
                   </span>
@@ -440,6 +453,7 @@ export default function App() {
               <BookingTable
                 bookings={filteredBookings}
                 onStatusChange={handleBookingStatusChange}
+                onViewDetails={(booking) => setSelectedBooking(booking)}
                 isUpdating={isUpdating}
               />
             </div>
@@ -473,6 +487,63 @@ export default function App() {
             </div>
           )}
         </>
+      )}
+
+      {selectedBooking && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={() => setSelectedBooking(null)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden z-10 border border-slate-100 animate-slide-up">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 font-display">Booking Details</h3>
+                <p className="text-xs text-slate-400 mt-1">{selectedBooking.id}</p>
+              </div>
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 text-sm text-slate-700">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Customer</p>
+                  <p className="mt-2 font-semibold text-slate-900">{selectedBooking.customerName}</p>
+                  <p className="text-slate-600">{selectedBooking.customerEmail}</p>
+                  <p className="text-slate-600">{selectedBooking.customerPhone}</p>
+                </div>
+                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Package</p>
+                  <p className="mt-2 font-semibold text-slate-900">{selectedBooking.packageTitle}</p>
+                  <p className="text-slate-600">{selectedBooking.destination}</p>
+                  <p className="text-slate-600">Travelers: {selectedBooking.numberOfTravelers}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-slate-100 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Booking Date</p>
+                  <p className="mt-2 font-semibold text-slate-900">{selectedBooking.date}</p>
+                </div>
+                <div className="rounded-xl border border-slate-100 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Travel Date</p>
+                  <p className="mt-2 font-semibold text-slate-900">{selectedBooking.travelDate}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-slate-100 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Status</p>
+                  <div className="mt-2"><StatusBadge status={selectedBooking.status} /></div>
+                </div>
+                <div className="rounded-xl border border-slate-100 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Payment</p>
+                  <p className="mt-2 font-semibold text-slate-900">{selectedBooking.paymentStatus}</p>
+                  <p className="text-slate-600">Total: ${selectedBooking.totalAmount.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* --- MOCK ADD PACKAGE DIALOG MODAL --- */}
