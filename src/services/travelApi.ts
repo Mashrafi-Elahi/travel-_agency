@@ -421,14 +421,23 @@ Travel Intelligence Team`;
       status: "Converted"
     };
 
+    const pkg = sessionPackages.find(p => p.title.toLowerCase() === inquiry.interestedPackage.toLowerCase());
+    const totalAmount = pkg ? pkg.price * 2 : 3000; // Assuming 2 travelers
+
     // Create a new BookingInquiry
     const newBooking: BookingInquiry = {
       id: `bkg-${Date.now()}`,
       customerName: inquiry.customerName,
+      customerEmail: inquiry.email,
+      customerPhone: inquiry.phone,
       packageTitle: inquiry.interestedPackage,
       destination: inquiry.destination,
       date: new Date().toISOString().split("T")[0],
-      status: "Pending"
+      travelDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 30 days from now
+      numberOfTravelers: 2,
+      totalAmount: totalAmount,
+      status: "Pending",
+      paymentStatus: "Pending"
     };
 
     sessionBookings = [newBooking, ...sessionBookings];
