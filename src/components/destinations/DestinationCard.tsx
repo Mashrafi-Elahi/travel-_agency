@@ -75,11 +75,10 @@ export default function DestinationCard({
           <button
             type="button"
             onClick={onTogglePopular}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
-              destination.popular
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${destination.popular
                 ? "bg-amber-50 text-amber-700 border-amber-200"
                 : "bg-slate-50 text-slate-400 border-slate-200 hover:text-slate-600"
-            }`}
+              }`}
           >
             <Star
               className={`w-3 h-3 ${destination.popular ? "fill-amber-400 text-amber-400" : ""}`}
