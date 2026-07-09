@@ -8,8 +8,10 @@ export interface TravelPackage {
   category: string;
   image: string;
   price: number;
+  duration: string;
   rating: number;
   status: PackageStatus;
+  description: string;
 }
 
 export interface BookingInquiry {
@@ -19,6 +21,21 @@ export interface BookingInquiry {
   destination: string;
   date: string;
   status: BookingStatus;
+}
+
+export type InquiryStatus = "New" | "Contacted" | "Follow-up" | "Converted" | "Closed";
+
+export interface Inquiry {
+  id: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  interestedPackage: string;
+  destination: string;
+  message: string;
+  date: string;
+  status: InquiryStatus;
+  assignedStaff?: string;
 }
 
 export type CustomerStatus = "Active" | "Suspended" | "Banned";
