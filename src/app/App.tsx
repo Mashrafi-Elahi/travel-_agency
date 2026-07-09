@@ -5,48 +5,18 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import DashboardStats from "../components/dashboard/DashboardStats";
 import PackageFilter from "../components/packages/PackageFilter";
 import PackageGrid from "../components/packages/PackageGrid";
+import DestinationManager from "../components/destinations/DestinationManager";
 import BookingTable from "../components/bookings/BookingTable";
 import CustomerStats from "../components/customers/CustomerStats";
 import CustomerTable from "../components/customers/CustomerTable";
 import CustomerProfile from "../components/customers/CustomerProfile";
+import PaymentSummary from "../components/payments/PaymentSummary";
+import PaymentTable from "../components/payments/PaymentTable";
+import ReviewList from "../components/reviews/ReviewList";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
 import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag } from "../types/travel";
-import { Compass, CalendarDays, Plus, X, Users, MapPinned, CreditCard, Star, ListChecks } from "lucide-react";
-
-interface ModulePlaceholderProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  checklist: string[];
-}
-
-function ModulePlaceholder({ icon, title, description, checklist }: ModulePlaceholderProps) {
-  return (
-    <div className="animate-fade-in bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-      <div className="p-6 lg:p-8 border-b border-slate-100 flex flex-col sm:flex-row sm:items-start gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-          {icon}
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-slate-900 font-display">{title}</h3>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">{description}</p>
-        </div>
-      </div>
-
-      <div className="p-6 lg:p-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {checklist.map((item) => (
-            <div key={item} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
-              <ListChecks className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
-              <span className="text-sm font-medium text-slate-700">{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users } from "lucide-react";
 
 export default function App() {
   // Navigation tab state
@@ -57,6 +27,10 @@ export default function App() {
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [bookings, setBookings] = useState<BookingInquiry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filter/Search states
@@ -74,29 +48,31 @@ export default function App() {
 
   // Operation states
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState<boolean>(false);
-
-  // New package form states
-  const [newPkgTitle, setNewPkgTitle] = useState("");
-  const [newPkgDest, setNewPkgDest] = useState("");
-  const [newPkgCat, setNewPkgCat] = useState("Beach");
-  const [newPkgPrice, setNewPkgPrice] = useState("");
-  const [newPkgStatus, setNewPkgStatus] = useState<PackageStatus>("Active");
+  const [packageModalMode, setPackageModalMode] = useState<PackageModalMode | null>(null);
+  const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
+  const [packageForm, setPackageForm] = useState<PackageFormState>(createPackageForm());
+  const [isSavingPackage, setIsSavingPackage] = useState(false);
 
   // Fetch initial dashboard and list datasets
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsData, packagesData, bookingsData, customersData] = await Promise.all([
+      const [statsData, packagesData, bookingsData, customersData, inquiriesData, paymentsData, reviewsData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
         travelApi.getCustomers(),
+        travelApi.getInquiries(),
+        travelApi.getPayments(),
+        travelApi.getReviews(),
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
       setCustomers(customersData);
+      setInquiries(inquiriesData);
+      setPayments(paymentsData);
+      setReviews(reviewsData);
     } catch (err) {
       console.error("Error loading travel agency data:", err);
     } finally {
@@ -116,6 +92,48 @@ export default function App() {
     } catch (err) {
       console.error("Error syncing dashboard stats:", err);
     }
+  };
+
+  const refreshCatalog = async () => {
+    try {
+      const [packagesData, statsData] = await Promise.all([
+        travelApi.getPackages(),
+        travelApi.getDashboardStats(),
+      ]);
+      setPackages(packagesData);
+      setStats(statsData);
+    } catch (err) {
+      console.error("Error refreshing package catalog:", err);
+      alert("Failed to refresh package catalog.");
+    }
+  };
+
+  const openCreatePackageModal = () => {
+    setEditingPackageId(null);
+    setPackageForm(createPackageForm());
+    setPackageModalMode("create");
+  };
+
+  const openEditPackageModal = (pkg: TravelPackage) => {
+    setEditingPackageId(pkg.id);
+    setPackageForm({
+      title: pkg.title,
+      destination: pkg.destination,
+      category: pkg.category,
+      price: String(pkg.price),
+      duration: pkg.duration,
+      image: pkg.image,
+      rating: String(pkg.rating),
+      status: pkg.status,
+      description: pkg.description,
+    });
+    setPackageModalMode("edit");
+  };
+
+  const closePackageModal = () => {
+    setPackageModalMode(null);
+    setEditingPackageId(null);
+    setPackageForm(createPackageForm());
   };
 
   // Update booking status action
@@ -139,6 +157,62 @@ export default function App() {
     }
   };
 
+  // --- Inquiry Handlers ---
+
+  const handleUpdateInquiryStatus = async (id: string, newStatus: InquiryStatus) => {
+    setIsUpdating(id);
+    try {
+      const updated = await travelApi.updateInquiryStatus(id, newStatus);
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? updated : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? updated : prev));
+      await syncStats();
+    } catch (err) {
+      alert("Failed to update inquiry status. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleAssignInquiry = async (id: string, staffName: string) => {
+    setIsUpdating(id);
+    try {
+      const updated = await travelApi.assignInquiry(id, staffName);
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? updated : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? updated : prev));
+    } catch (err) {
+      alert("Failed to assign staff to inquiry. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleConvertInquiry = async (id: string) => {
+    setIsUpdating(id);
+    try {
+      const result = await travelApi.convertInquiryToBooking(id);
+      
+      // Update inquiries state (the status changed to "Converted")
+      setInquiries((prev) => prev.map((inq) => (inq.id === id ? result.inquiry : inq)));
+      setSelectedInquiry((prev) => (prev && prev.id === id ? result.inquiry : prev));
+      
+      // Add the new booking
+      setBookings((prev) => [result.booking, ...prev]);
+      
+      // Sync dashboard stats
+      await syncStats();
+
+      // Refresh customers list if we auto-created a customer
+      const customersData = await travelApi.getCustomers();
+      setCustomers(customersData);
+
+      alert(`Successfully converted inquiry to a pending booking! Booking ID: ${result.booking.id}`);
+    } catch (err) {
+      alert("Failed to convert inquiry to booking. Please try again.");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
   // Extract unique categories and statuses for filtering selectors
   const categories = useMemo(() => {
     return Array.from(new Set(packages.map((p) => p.category)));
@@ -146,53 +220,74 @@ export default function App() {
 
   const statuses: PackageStatus[] = ["Active", "Inactive", "Draft"];
 
-  // Handle adding a mock new package (extends the in-memory array)
-  const handleAddPackageSubmit = (e: React.FormEvent) => {
+  // Handle create/edit package submit
+  const handlePackageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPkgTitle || !newPkgDest || !newPkgPrice) {
+    if (!packageForm.title.trim() || !packageForm.destination.trim() || !packageForm.price.trim()) {
       alert("Please fill in all fields.");
       return;
     }
 
-    const priceNum = parseFloat(newPkgPrice);
+    const priceNum = parseFloat(packageForm.price);
     if (isNaN(priceNum) || priceNum <= 0) {
       alert("Please enter a valid price.");
       return;
     }
 
-    // Default beautiful travel placeholder based on category
-    const catImages: Record<string, string> = {
-      Beach: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
-      Mountain: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=800&q=80",
-      Adventure: "https://images.unsplash.com/photo-1533240332313-0db49b439ad3?auto=format&fit=crop&w=800&q=80",
-      Cultural: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-      "City Break": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=800&q=80",
-    };
+    const ratingNum = parseFloat(packageForm.rating);
+    if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 5) {
+      alert("Please enter a rating between 0 and 5.");
+      return;
+    }
 
-    const newPackage: TravelPackage = {
-      id: `pkg-${Date.now()}`,
-      title: newPkgTitle,
-      destination: newPkgDest,
-      category: newPkgCat,
-      image: catImages[newPkgCat] || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80",
+    if (!packageForm.description.trim()) {
+      alert("Please add a short package description.");
+      return;
+    }
+
+    const nextPackage: TravelPackage = {
+      id: editingPackageId || `pkg-${Date.now()}`,
+      title: packageForm.title.trim(),
+      destination: packageForm.destination.trim(),
+      category: packageForm.category,
+      image: packageForm.image.trim(),
       price: priceNum,
-      rating: 4.5 + Math.random() * 0.5, // Randomized between 4.5 and 5.0
-      status: newPkgStatus,
+      duration: packageForm.duration,
+      rating: ratingNum,
+      status: packageForm.status,
+      description: packageForm.description.trim(),
     };
 
-    // Update state directly
-    setPackages((prev) => [newPackage, ...prev]);
-    
-    // Increment total packages counter
-    setStats((prev) => prev ? { ...prev, totalPackages: prev.totalPackages + 1 } : null);
+    setIsSavingPackage(true);
+    try {
+      if (packageModalMode === "edit") {
+        setPackages((prev) =>
+          prev.map((pkg) => (pkg.id === nextPackage.id ? nextPackage : pkg))
+        );
+      } else {
+        await travelApi.addPackage(nextPackage);
+        setPackages((prev) => [nextPackage, ...prev]);
+      }
 
-    // Reset form & close modal
-    setNewPkgTitle("");
-    setNewPkgDest("");
-    setNewPkgCat("Beach");
-    setNewPkgPrice("");
-    setNewPkgStatus("Active");
-    setShowAddModal(false);
+      await syncStats();
+      closePackageModal();
+    } catch (error) {
+      alert(
+        packageModalMode === "edit"
+          ? "Failed to update package. Please try again."
+          : "Failed to add package. Please try again."
+      );
+    } finally {
+      setIsSavingPackage(false);
+    }
+  };
+
+  const handleDeletePackage = async (pkg: TravelPackage) => {
+    const confirmed = window.confirm(`Delete package \"${pkg.title}\"?`);
+    if (!confirmed) return;
+
+    setPackages((prev) => prev.filter((item) => item.id !== pkg.id));
+    await syncStats();
   };
 
   // Reset filters
@@ -273,12 +368,33 @@ export default function App() {
     setSelectedCustomer((prev) => prev && prev.id === customerId ? updated : prev);
   };
 
+  // Handle changing payment settlement status
+  const handlePaymentStatusChange = async (id: string, status: PaymentStatus) => {
+    try {
+      const updated = await travelApi.updatePaymentStatus(id, status);
+      setPayments((prev) => prev.map((payment) => payment.id === id ? updated : payment));
+    } catch (err) {
+      alert("Failed to update payment status. Please try again.");
+    }
+  };
+
+  // Handle approving or hiding customer reviews
+  const handleReviewStatusChange = async (id: string, status: ReviewStatus) => {
+    try {
+      const updated = await travelApi.updateReviewStatus(id, status);
+      setReviews((prev) => prev.map((review) => review.id === id ? updated : review));
+    } catch (err) {
+      alert("Failed to update review status. Please try again.");
+    }
+  };
+
   // Render variables depending on activeTab
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
     destinations: "Destination Management",
     bookings: "Bookings & Inquiries Manager",
+    inquiries: "Inquiry Management",
     customers: "Customer Management",
     payments: "Payments & Revenue",
     reviews: "Reviews & Ratings",
@@ -287,11 +403,9 @@ export default function App() {
   const headerSubtitleMap: Record<SidebarTab, string> = {
     overview: "Real-time summary of sales, listings performance, and support inquiries",
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
-    destinations: "Curate city and country destinations, popularity flags, and package availability",
     bookings: "Manage customer reservations, track departures, and confirm payments",
+    inquiries: "Review client inquiries before booking, assign staff, and convert hot leads to bookings",
     customers: "View customer profiles, booking history, and manage notes",
-    payments: "Track paid, unpaid, partial, and refunded booking revenue",
-    reviews: "Monitor package feedback, ratings, and review visibility",
   };
 
   return (
@@ -401,17 +515,27 @@ export default function App() {
                 <SearchInput
                   value={packageSearch}
                   onChange={setPackageSearch}
-                  placeholder="Search packages by title or country..."
+                  placeholder="Search packages by title or destination..."
                 />
-                
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-brand-600/10 hover:shadow-lg transition-all cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Travel Package
-                </button>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={refreshCatalog}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Refresh Catalog
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openCreatePackageModal}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-brand-600/10 hover:shadow-lg transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Travel Package
+                  </button>
+                </div>
               </div>
 
               {/* Filter controls panel */}
@@ -433,25 +557,13 @@ export default function App() {
               <PackageGrid
                 packages={filteredPackages}
                 onResetFilters={handleResetFilters}
+                onEditPackage={openEditPackageModal}
+                onDeletePackage={handleDeletePackage}
               />
             </div>
           )}
 
-          {/* 3. DESTINATIONS VIEW PLACEHOLDER */}
-          {activeTab === "destinations" && (
-            <ModulePlaceholder
-              icon={<MapPinned className="w-6 h-6" />}
-              title="Destination Management Module"
-              description="Ready for the destination owner to add searchable country/city cards, package counts, and popular destination controls."
-              checklist={[
-                "Create destination mock data",
-                "Add search and popular filter",
-                "Connect popular toggle to mock API",
-              ]}
-            />
-          )}
-
-          {/* 4. BOOKINGS VIEW */}
+          {/* 3. BOOKINGS VIEW */}
           {activeTab === "bookings" && (
             <div className="space-y-6 animate-fade-in">
               {/* Bookings Filters Row */}
@@ -499,7 +611,7 @@ export default function App() {
             </div>
           )}
 
-          {/* 5. CUSTOMERS VIEW */}
+          {/* 4. CUSTOMERS VIEW */}
           {activeTab === "customers" && (
             <div className="space-y-6 animate-fade-in">
               <CustomerStats customers={customers} />
@@ -526,62 +638,40 @@ export default function App() {
               />
             </div>
           )}
-
-          {/* 6. PAYMENTS VIEW PLACEHOLDER */}
-          {activeTab === "payments" && (
-            <ModulePlaceholder
-              icon={<CreditCard className="w-6 h-6" />}
-              title="Payment & Revenue Module"
-              description="Ready for the payments owner to add revenue summary cards, payment records, status filters, and refund tracking."
-              checklist={[
-                "Create payment mock data",
-                "Add revenue summary cards",
-                "Build filterable payment table",
-              ]}
-            />
-          )}
-
-          {/* 7. REVIEWS VIEW PLACEHOLDER */}
-          {activeTab === "reviews" && (
-            <ModulePlaceholder
-              icon={<Star className="w-6 h-6" />}
-              title="Review & Rating Module"
-              description="Ready for the reviews owner to add customer feedback, average rating stats, and approve/hide review actions."
-              checklist={[
-                "Create review mock data",
-                "Add rating and status filters",
-                "Build approve or hide actions",
-              ]}
-            />
-          )}
         </>
       )}
 
-      {/* --- MOCK ADD PACKAGE DIALOG MODAL --- */}
-      {showAddModal && (
+      {/* --- PACKAGE DIALOG MODAL --- */}
+      {packageModalMode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-            onClick={() => setShowAddModal(false)}
+            onClick={closePackageModal}
           />
 
           {/* Form container */}
           <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden z-10 border border-slate-100 animate-slide-up">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-900 font-display">Create Travel Itinerary</h3>
-                <p className="text-xs text-slate-400 mt-1">Populate details to launch a new travel product package</p>
+                <h3 className="text-base font-bold text-slate-900 font-display">
+                  {packageModalMode === "edit" ? "Edit Travel Package" : "Create Travel Itinerary"}
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  {packageModalMode === "edit"
+                    ? "Update the listing content, pricing, and publication status."
+                    : "Populate details to launch a new travel product package"}
+                </p>
               </div>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={closePackageModal}
                 className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddPackageSubmit} className="p-6 space-y-4">
+            <form onSubmit={handlePackageSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
                   Package Title
@@ -589,8 +679,8 @@ export default function App() {
                 <input
                   type="text"
                   required
-                  value={newPkgTitle}
-                  onChange={(e) => setNewPkgTitle(e.target.value)}
+                  value={packageForm.title}
+                  onChange={(e) => setPackageForm((prev) => ({ ...prev, title: e.target.value }))}
                   placeholder="e.g. Hawaiian Cruise Getaway"
                   className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 placeholder-slate-400"
                 />
@@ -604,8 +694,8 @@ export default function App() {
                   <input
                     type="text"
                     required
-                    value={newPkgDest}
-                    onChange={(e) => setNewPkgDest(e.target.value)}
+                    value={packageForm.destination}
+                    onChange={(e) => setPackageForm((prev) => ({ ...prev, destination: e.target.value }))}
                     placeholder="e.g. Honolulu, USA"
                     className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 placeholder-slate-400"
                   />
@@ -616,8 +706,12 @@ export default function App() {
                     Category
                   </label>
                   <select
-                    value={newPkgCat}
-                    onChange={(e) => setNewPkgCat(e.target.value)}
+                    value={packageForm.category}
+                    onChange={(e) => setPackageForm((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                      image: prev.image || packageImageByCategory[e.target.value] || packageImageByCategory.Beach,
+                    }))}
                     className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 cursor-pointer"
                   >
                     <option value="Beach">Beach</option>
@@ -638,9 +732,48 @@ export default function App() {
                     type="number"
                     required
                     min="1"
-                    value={newPkgPrice}
-                    onChange={(e) => setNewPkgPrice(e.target.value)}
+                    value={packageForm.price}
+                    onChange={(e) => setPackageForm((prev) => ({ ...prev, price: e.target.value }))}
                     placeholder="e.g. 1499"
+                    className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 placeholder-slate-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Duration
+                  </label>
+                  <select
+                    value={packageForm.duration}
+                    onChange={(e) => setPackageForm((prev) => ({ ...prev, duration: e.target.value }))}
+                    className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 cursor-pointer"
+                  >
+                    <option value="3 days">3 days</option>
+                    <option value="4 days">4 days</option>
+                    <option value="5 days">5 days</option>
+                    <option value="6 days">6 days</option>
+                    <option value="7 days">7 days</option>
+                    <option value="8 days">8 days</option>
+                    <option value="9 days">9 days</option>
+                    <option value="10 days">10 days</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Rating
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value={packageForm.rating}
+                    onChange={(e) => setPackageForm((prev) => ({ ...prev, rating: e.target.value }))}
+                    placeholder="e.g. 4.8"
                     className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 placeholder-slate-400"
                   />
                 </div>
@@ -650,8 +783,8 @@ export default function App() {
                     Listing Status
                   </label>
                   <select
-                    value={newPkgStatus}
-                    onChange={(e) => setNewPkgStatus(e.target.value as PackageStatus)}
+                    value={packageForm.status}
+                    onChange={(e) => setPackageForm((prev) => ({ ...prev, status: e.target.value as PackageStatus }))}
                     className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 cursor-pointer"
                   >
                     <option value="Active">Active</option>
@@ -661,19 +794,52 @@ export default function App() {
                 </div>
               </div>
 
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={packageForm.image}
+                  onChange={(e) => setPackageForm((prev) => ({ ...prev, image: e.target.value }))}
+                  placeholder="https://..."
+                  className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 placeholder-slate-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                  Description
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={packageForm.description}
+                  onChange={(e) => setPackageForm((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describe the itinerary highlights, inclusions, and audience."
+                  className="w-full text-sm px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 placeholder-slate-400 resize-none"
+                />
+              </div>
+
               <div className="pt-4 border-t border-slate-50 flex items-center justify-end gap-3.5">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={closePackageModal}
                   className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-all shadow-md shadow-brand-600/10 cursor-pointer"
+                  disabled={isSavingPackage}
+                  className="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-all shadow-md shadow-brand-600/10 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Publish Package
+                  {isSavingPackage
+                    ? "Saving..."
+                    : packageModalMode === "edit"
+                      ? "Save Changes"
+                      : "Publish Package"}
                 </button>
               </div>
             </form>
@@ -692,6 +858,19 @@ export default function App() {
           onStatusChange={handleCustomerStatusChange}
           onDelete={handleDeleteCustomer}
           onTagToggle={handleToggleCustomerTag}
+        />
+      )}
+
+      {/* --- INQUIRY DETAILS MODAL --- */}
+      {selectedInquiry && (
+        <InquiryDetailModal
+          inquiry={selectedInquiry}
+          staffList={mockStaff}
+          onStatusChange={handleUpdateInquiryStatus}
+          onAssignStaff={handleAssignInquiry}
+          onConvert={handleConvertInquiry}
+          onClose={() => setSelectedInquiry(null)}
+          isUpdating={isUpdating === selectedInquiry.id}
         />
       )}
     </DashboardLayout>

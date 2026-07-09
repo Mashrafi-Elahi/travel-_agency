@@ -45,8 +45,13 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     },
     {
       id: "bookings" as SidebarTab,
-      label: "Bookings & Inquiries",
+      label: "Bookings Manager",
       icon: <Receipt className="w-5 h-5" />,
+    },
+    {
+      id: "inquiries" as SidebarTab,
+      label: "Inquiry Management",
+      icon: <MessageSquare className="w-5 h-5" />,
     },
     {
       id: "customers" as SidebarTab,
@@ -87,7 +92,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-3 mb-3 block">
           Main Console
         </div>
-        
+
         {menuItems.map((item) => {
           const isActive = activeTab === item.id;
           return (

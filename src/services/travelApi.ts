@@ -15,6 +15,10 @@ import { mockPackages } from "../data/mockPackages";
 import { mockBookings } from "../data/mockBookings";
 import { mockStats } from "../data/mockStats";
 import { mockCustomers } from "../data/mockCustomers";
+import { mockPayments } from "../data/mockPayments";
+import { mockReviews } from "../data/mockReviews";
+import { mockInquiries } from "../data/mockInquiries";
+import { mockDestinations } from "../data/mockDestinations";
 
 // In-memory data store for the current browser session
 let sessionPackages = [...mockPackages];
@@ -32,7 +36,7 @@ export const travelApi = {
     
     // Calculate stats dynamically for realism
     const totalBookings = sessionBookings.length;
-    const pendingInquiries = sessionBookings.filter((b) => b.status === "Pending").length;
+    const pendingInquiries = sessionInquiries.filter((inq) => inq.status === "New" || inq.status === "Contacted" || inq.status === "Follow-up").length;
     const totalPackages = sessionPackages.length;
     
     // Calculate simulated revenue from Confirmed and Completed bookings
@@ -56,6 +60,34 @@ export const travelApi = {
   async getPackages(): Promise<TravelPackage[]> {
     await delay(300);
     return [...sessionPackages];
+  },
+
+  async addPackage(pkg: TravelPackage): Promise<TravelPackage> {
+    await delay(200);
+    const createdPackage = { ...pkg };
+    sessionPackages = [createdPackage, ...sessionPackages];
+
+    const destinationExists = sessionDestinations.some(
+      (destination) => destinationKey(`${destination.city}, ${destination.country}`) === destinationKey(createdPackage.destination)
+    );
+
+    if (!destinationExists) {
+      const parsed = parsePackageDestination(createdPackage.destination);
+      sessionDestinations = [
+        {
+          id: `dest-${Date.now()}`,
+          name: createdPackage.destination,
+          city: parsed.city,
+          country: parsed.country,
+          image: createdPackage.image,
+          description: `Auto-created destination linked to ${createdPackage.title}.`,
+          popular: false,
+        },
+        ...sessionDestinations,
+      ];
+    }
+
+    return createdPackage;
   },
 
   async getBookings(): Promise<BookingInquiry[]> {
@@ -179,6 +211,50 @@ export const travelApi = {
     return { ...sessionCustomers[index], notes: [...sessionCustomers[index].notes], tags: [...currentTags] };
   },
 
+  // --- Payment & Revenue API ---
+
+  async getPayments(): Promise<PaymentRecord[]> {
+    await delay(300);
+    return [...sessionPayments];
+  },
+
+  async updatePaymentStatus(id: string, status: PaymentStatus): Promise<PaymentRecord> {
+    await delay(200);
+    const index = sessionPayments.findIndex((payment) => payment.id === id);
+    if (index === -1) {
+      throw new Error(`Payment with ID ${id} not found`);
+    }
+
+    sessionPayments[index] = {
+      ...sessionPayments[index],
+      status,
+    };
+
+    return { ...sessionPayments[index] };
+  },
+
+  // --- Reviews API ---
+
+  async getReviews(): Promise<Review[]> {
+    await delay(300);
+    return [...sessionReviews];
+  },
+
+  async updateReviewStatus(id: string, status: ReviewStatus): Promise<Review> {
+    await delay(200);
+    const index = sessionReviews.findIndex((review) => review.id === id);
+    if (index === -1) {
+      throw new Error(`Review with ID ${id} not found`);
+    }
+
+    sessionReviews[index] = {
+      ...sessionReviews[index],
+      status,
+    };
+
+    return { ...sessionReviews[index] };
+  },
+
   // --- AI Insights API ---
   async getCustomerAiInsights(customerId: string): Promise<{
     travelPersona: string;
@@ -257,5 +333,115 @@ Best regards,
 Mashrafe Elahi
 Travel Intelligence Team`;
   },
-};
 
+  // --- Inquiry Management API ---
+
+  async getInquiries(): Promise<Inquiry[]> {
+    await delay(300);
+    return sessionInquiries.map(i => ({ ...i }));
+  },
+
+  async updateInquiryStatus(id: string, status: InquiryStatus): Promise<Inquiry> {
+    await delay(200);
+    const index = sessionInquiries.findIndex((i) => i.id === id);
+    if (index === -1) {
+      throw new Error(`Inquiry with ID ${id} not found`);
+    }
+    sessionInquiries[index] = {
+      ...sessionInquiries[index],
+      status,
+    };
+    return { ...sessionInquiries[index] };
+  },
+
+  async assignInquiry(id: string, staff: string): Promise<Inquiry> {
+    await delay(200);
+    const index = sessionInquiries.findIndex((i) => i.id === id);
+    if (index === -1) {
+      throw new Error(`Inquiry with ID ${id} not found`);
+    }
+    sessionInquiries[index] = {
+      ...sessionInquiries[index],
+      assignedStaff: staff || undefined,
+    };
+    return { ...sessionInquiries[index] };
+  },
+
+  async convertInquiryToBooking(id: string): Promise<{ inquiry: Inquiry; booking: BookingInquiry }> {
+    await delay(300);
+    const index = sessionInquiries.findIndex((i) => i.id === id);
+    if (index === -1) {
+      throw new Error(`Inquiry with ID ${id} not found`);
+    }
+
+    const inquiry = sessionInquiries[index];
+    if (inquiry.status === "Converted") {
+      throw new Error(`Inquiry is already converted to booking`);
+    }
+
+    // Update status to Converted
+    sessionInquiries[index] = {
+      ...inquiry,
+      status: "Converted"
+    };
+
+    // Create a new BookingInquiry
+    const newBooking: BookingInquiry = {
+      id: `bkg-${Date.now()}`,
+      customerName: inquiry.customerName,
+      packageTitle: inquiry.interestedPackage,
+      destination: inquiry.destination,
+      date: new Date().toISOString().split("T")[0],
+      status: "Pending"
+    };
+
+    sessionBookings = [newBooking, ...sessionBookings];
+
+    // Handle Customer record linking or creation
+    const customerExists = sessionCustomers.some(
+      (c) => c.name.toLowerCase() === inquiry.customerName.toLowerCase()
+    );
+
+    if (!customerExists) {
+      const newCustomer: Customer = {
+        id: `cust-${Date.now()}`,
+        name: inquiry.customerName,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        address: "Address not provided (Lead)",
+        totalBookings: 1,
+        totalSpent: 0,
+        lastBookingDate: newBooking.date,
+        avatar: inquiry.customerName.split(" ").map(n => n[0]).join(""),
+        notes: [
+          {
+            id: `note-${Date.now()}`,
+            text: `Converted from Inquiry ID: ${inquiry.id}. Original message: "${inquiry.message}"`,
+            date: newBooking.date,
+            author: "System"
+          }
+        ],
+        status: "Active",
+        tags: ["New"],
+        joinDate: newBooking.date
+      };
+      sessionCustomers = [newCustomer, ...sessionCustomers];
+    } else {
+      const cIndex = sessionCustomers.findIndex(
+        (c) => c.name.toLowerCase() === inquiry.customerName.toLowerCase()
+      );
+      if (cIndex !== -1) {
+        sessionCustomers[cIndex] = {
+          ...sessionCustomers[cIndex],
+          totalBookings: sessionCustomers[cIndex].totalBookings + 1,
+          lastBookingDate: newBooking.date
+        };
+      }
+    }
+
+    return {
+      inquiry: { ...sessionInquiries[index] },
+      booking: newBooking
+    };
+  }
+};
