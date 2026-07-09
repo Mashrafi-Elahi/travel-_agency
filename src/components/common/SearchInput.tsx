@@ -10,7 +10,7 @@ interface SearchInputProps {
 export default function SearchInput({
   value,
   onChange,
-  placeholder = "Search packages as you desire...",
+  placeholder = "Search packages and destinations...",
 }: SearchInputProps) {
   return (
     <div className="relative w-full max-w-md">
