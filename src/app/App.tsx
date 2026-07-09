@@ -257,8 +257,8 @@ export default function App() {
 
   const statuses: PackageStatus[] = ["Active", "Inactive", "Draft"];
 
-  // Handle adding a mock new package (extends the in-memory array)
-  const handleAddPackageSubmit = async (e: React.FormEvent) => {
+  // Handle create/edit package submit
+  const handlePackageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!packageForm.title.trim() || !packageForm.destination.trim() || !packageForm.price.trim()) {
       alert("Please fill in all fields.");
@@ -282,25 +282,49 @@ export default function App() {
       return;
     }
 
+    const nextPackage: TravelPackage = {
+      id: editingPackageId || `pkg-${Date.now()}`,
+      title: packageForm.title.trim(),
+      destination: packageForm.destination.trim(),
+      category: packageForm.category,
+      image: packageForm.image.trim(),
+      price: priceNum,
+      duration: packageForm.duration,
+      rating: ratingNum,
+      status: packageForm.status,
+      description: packageForm.description.trim(),
+    };
+
+    setIsSavingPackage(true);
     try {
-      await travelApi.addPackage(newPackage);
+      if (packageModalMode === "edit") {
+        setPackages((prev) =>
+          prev.map((pkg) => (pkg.id === nextPackage.id ? nextPackage : pkg))
+        );
+      } else {
+        await travelApi.addPackage(nextPackage);
+        setPackages((prev) => [nextPackage, ...prev]);
+      }
 
-      // Update state directly
-      setPackages((prev) => [newPackage, ...prev]);
-
-      // Refresh totals so the dashboard and destination counts stay aligned with the shared store
       await syncStats();
-
-      // Reset form & close modal
-      setNewPkgTitle("");
-      setNewPkgDest("");
-      setNewPkgCat("Beach");
-      setNewPkgPrice("");
-      setNewPkgStatus("Active");
-      setShowAddModal(false);
+      closePackageModal();
     } catch (error) {
-      alert("Failed to add package. Please try again.");
+      alert(
+        packageModalMode === "edit"
+          ? "Failed to update package. Please try again."
+          : "Failed to add package. Please try again."
+      );
+    } finally {
+      setIsSavingPackage(false);
     }
+  };
+
+  const handleDeletePackage = async (pkg: TravelPackage) => {
+    const confirmed = window.confirm(`Delete package \"${pkg.title}\"?`);
+    if (!confirmed) return;
+
+    setPackages((prev) => prev.filter((item) => item.id !== pkg.id));
+    await syncStats();
   };
 
   // Reset filters
@@ -407,6 +431,7 @@ export default function App() {
     packages: "Travel Packages Catalog",
     destinations: "Destination Management",
     bookings: "Bookings & Inquiries Manager",
+    inquiries: "Inquiry Management",
     customers: "Customer Management",
     payments: "Payments & Revenue",
     reviews: "Reviews & Ratings",
@@ -624,6 +649,21 @@ export default function App() {
               <BookingTable
                 bookings={filteredBookings}
                 onStatusChange={handleBookingStatusChange}
+                isUpdating={isUpdating}
+              />
+            </div>
+          )}
+
+          {/* 5. CUSTOMERS VIEW */}
+          {activeTab === "inquiries" && (
+            <div className="space-y-6 animate-fade-in">
+              <InquiryTable
+                inquiries={inquiries}
+                staffList={mockStaff}
+                onStatusChange={handleUpdateInquiryStatus}
+                onAssignStaff={handleAssignInquiry}
+                onConvert={handleConvertInquiry}
+                onViewDetails={setSelectedInquiry}
                 isUpdating={isUpdating}
               />
             </div>

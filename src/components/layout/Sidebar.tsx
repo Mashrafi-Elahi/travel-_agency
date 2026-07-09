@@ -1,7 +1,7 @@
 import React from "react";
-import { LayoutDashboard, Compass, MapPinned, Receipt, Users, Settings, HelpCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Compass, MapPinned, Receipt, Users, Settings, HelpCircle, LogOut, MessageSquare, CreditCard } from "lucide-react";
 
-export type SidebarTab = "overview" | "packages" | "destinations" | "bookings" | "customers";
+export type SidebarTab = "overview" | "packages" | "destinations" | "bookings" | "inquiries" | "customers" | "payments" | "reviews";
 
 interface SidebarProps {
   activeTab: SidebarTab;

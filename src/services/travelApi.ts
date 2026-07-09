@@ -1,4 +1,4 @@
-import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, Destination } from "../types/travel";
+import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, Destination, PaymentRecord, PaymentStatus, Review, ReviewStatus, Inquiry, InquiryStatus } from "../types/travel";
 import { mockPackages } from "../data/mockPackages";
 import { mockBookings } from "../data/mockBookings";
 import { mockStats } from "../data/mockStats";
@@ -6,12 +6,16 @@ import { mockCustomers } from "../data/mockCustomers";
 import { mockPayments } from "../data/mockPayments";
 import { mockReviews } from "../data/mockReviews";
 import { mockInquiries } from "../data/mockInquiries";
+import { mockDestinations } from "../data/mockDestinations";
 
 // In-memory data store for the current browser session
 let sessionPackages = [...mockPackages];
 let sessionBookings = [...mockBookings];
 let sessionCustomers: Customer[] = mockCustomers.map(c => ({ ...c, notes: [...c.notes], tags: [...c.tags] }));
 let sessionDestinations: Destination[] = mockDestinations.map((destination) => ({ ...destination }));
+let sessionPayments: PaymentRecord[] = mockPayments.map((payment) => ({ ...payment }));
+let sessionReviews: Review[] = mockReviews.map((review) => ({ ...review }));
+let sessionInquiries: Inquiry[] = mockInquiries.map((inquiry) => ({ ...inquiry }));
 
 const destinationKey = (value: string) => value.trim().toLowerCase();
 
