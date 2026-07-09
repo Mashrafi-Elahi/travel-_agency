@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutDashboard, Compass, MapPinned, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut, MessageSquare, CreditCard } from "lucide-react";
+import { LayoutDashboard, Compass, MapPinned, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut, MessageSquare, CreditCard, Star } from "lucide-react";
 
 export type SidebarTab = "overview" | "packages" | "destinations" | "bookings" | "customers" | "inquiries" | "payments" | "reviews";
 

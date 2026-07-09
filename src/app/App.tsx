@@ -284,11 +284,25 @@ export default function App() {
       return;
     }
 
+    const nextPackage: TravelPackage = {
+      id: editingPackageId || `pkg-${Date.now()}`,
+      title: packageForm.title.trim(),
+      destination: packageForm.destination.trim(),
+      category: packageForm.category,
+      image: packageForm.image.trim(),
+      price: priceNum,
+      duration: packageForm.duration,
+      rating: ratingNum,
+      status: packageForm.status,
+      description: packageForm.description.trim(),
+    };
+
     setIsSavingPackage(true);
     try {
       if (packageModalMode === "edit") {
+        const updatedPackage = await travelApi.updatePackage(nextPackage.id, nextPackage);
         setPackages((prev) =>
-          prev.map((pkg) => (pkg.id === nextPackage.id ? nextPackage : pkg))
+          prev.map((pkg) => (pkg.id === updatedPackage.id ? updatedPackage : pkg))
         );
       } else {
         await travelApi.addPackage(nextPackage);
@@ -436,9 +450,12 @@ export default function App() {
   const headerSubtitleMap: Record<SidebarTab, string> = {
     overview: "Real-time summary of sales, listings performance, and support inquiries",
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
+    destinations: "Create, search, and curate the destination catalog with popular flags and package counts",
     bookings: "Manage customer reservations, track departures, and confirm payments",
     inquiries: "Review client inquiries before booking, assign staff, and convert hot leads to bookings",
     customers: "View customer profiles, booking history, and manage notes",
+    payments: "Track booking payments, revenue, and refund status.",
+    reviews: "Monitor customer feedback and package ratings.",
   };
 
   return (
@@ -597,6 +614,9 @@ export default function App() {
             </div>
           )}
 
+          {/* 3. DESTINATIONS VIEW */}
+          {activeTab === "destinations" && <DestinationManager />}
+
           {/* 3. BOOKINGS VIEW */}
           {activeTab === "bookings" && (
             <div className="space-y-6 animate-fade-in">
@@ -694,6 +714,27 @@ export default function App() {
                 onStatusFilterChange={setCustomerStatusFilter}
                 sortBy={customerSort}
                 onSortChange={setCustomerSort}
+              />
+            </div>
+          )}
+
+          {/* 6. PAYMENTS VIEW */}
+          {activeTab === "payments" && (
+            <div className="space-y-6 animate-fade-in">
+              <PaymentSummary payments={payments} />
+              <PaymentTable
+                payments={payments}
+                onStatusChange={handlePaymentStatusChange}
+              />
+            </div>
+          )}
+
+          {/* 7. REVIEWS VIEW */}
+          {activeTab === "reviews" && (
+            <div className="space-y-6 animate-fade-in">
+              <ReviewList
+                reviews={reviews}
+                onStatusChange={handleReviewStatusChange}
               />
             </div>
           )}

@@ -12,9 +12,6 @@ import { mockDestinations } from "../data/mockDestinations";
 let sessionPackages = [...mockPackages];
 let sessionBookings = [...mockBookings];
 let sessionCustomers: Customer[] = mockCustomers.map(c => ({ ...c, notes: [...c.notes], tags: [...c.tags] }));
-let sessionPayments: PaymentRecord[] = [...mockPayments];
-let sessionReviews: Review[] = [...mockReviews];
-let sessionInquiries = [...mockInquiries];
 let sessionDestinations: Destination[] = mockDestinations.map((destination) => ({ ...destination }));
 let sessionPayments: PaymentRecord[] = mockPayments.map((payment) => ({ ...payment }));
 let sessionReviews: Review[] = mockReviews.map((review) => ({ ...review }));
@@ -139,19 +136,62 @@ export const travelApi = {
     return [...sessionBookings];
   },
 
+  // --- Destination Management API ---
+
   async getDestinations(): Promise<Destination[]> {
-    await delay(250);
-    return sessionDestinations.map((destination) => ({ ...destination }));
+    await delay(300);
+    return hydrateDestinationCounts(sessionDestinations).map((destination) => ({ ...destination }));
   },
 
-  async getPayments(): Promise<PaymentRecord[]> {
+  async addDestination(destination: Omit<Destination, "id" | "availablePackages">): Promise<Destination> {
     await delay(250);
-    return sessionPayments.map((payment) => ({ ...payment }));
+    const createdDestination: Destination = {
+      ...destination,
+      id: `dest-${Date.now()}`,
+      image: destination.image || defaultDestinationImage,
+      availablePackages: 0,
+    };
+    sessionDestinations = [createdDestination, ...sessionDestinations];
+    return { ...createdDestination };
   },
 
-  async getReviews(): Promise<Review[]> {
+  async updateDestination(destinationId: string, updates: Partial<Omit<Destination, "id" | "availablePackages">>): Promise<Destination> {
     await delay(250);
-    return sessionReviews.map((review) => ({ ...review }));
+    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
+    if (index === -1) {
+      throw new Error(`Destination with ID ${destinationId} not found`);
+    }
+
+    sessionDestinations[index] = {
+      ...sessionDestinations[index],
+      ...updates,
+    };
+
+    return { ...hydrateDestinationCounts([sessionDestinations[index]])[0] };
+  },
+
+  async deleteDestination(destinationId: string): Promise<void> {
+    await delay(250);
+    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
+    if (index === -1) {
+      throw new Error(`Destination with ID ${destinationId} not found`);
+    }
+    sessionDestinations = sessionDestinations.filter((destination) => destination.id !== destinationId);
+  },
+
+  async toggleDestinationPopular(destinationId: string): Promise<Destination> {
+    await delay(200);
+    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
+    if (index === -1) {
+      throw new Error(`Destination with ID ${destinationId} not found`);
+    }
+
+    sessionDestinations[index] = {
+      ...sessionDestinations[index],
+      popular: !sessionDestinations[index].popular,
+    };
+
+    return { ...hydrateDestinationCounts([sessionDestinations[index]])[0] };
   },
 
   async updateBookingStatus(id: string, status: BookingStatus): Promise<BookingInquiry> {
