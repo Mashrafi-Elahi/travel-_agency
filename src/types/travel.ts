@@ -1,5 +1,6 @@
 export type PackageStatus = "Active" | "Inactive" | "Draft";
 export type BookingStatus = "Pending" | "Confirmed" | "Cancelled" | "Completed";
+export type PaymentStatus = "Pending" | "Paid" | "Partial" | "Refunded";
 
 export interface TravelPackage {
   id: string;
@@ -17,10 +18,16 @@ export interface TravelPackage {
 export interface BookingInquiry {
   id: string;
   customerName: string;
+  customerEmail: string;
+  customerPhone: string;
   packageTitle: string;
   destination: string;
   date: string;
+  travelDate: string;
+  numberOfTravelers: number;
+  totalAmount: number;
   status: BookingStatus;
+  paymentStatus: PaymentStatus;
 }
 
 export type InquiryStatus = "New" | "Contacted" | "Follow-up" | "Converted" | "Closed";
