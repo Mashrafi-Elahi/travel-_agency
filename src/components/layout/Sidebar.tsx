@@ -1,7 +1,25 @@
 import React from "react";
-import { LayoutDashboard, Compass, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Compass,
+  Receipt,
+  Users,
+  Settings,
+  HelpCircle,
+  LogOut,
+  MapPinned,
+  CreditCard,
+  Star,
+} from "lucide-react";
 
-export type SidebarTab = "overview" | "packages" | "bookings" | "customers";
+export type SidebarTab =
+  | "overview"
+  | "packages"
+  | "destinations"
+  | "bookings"
+  | "customers"
+  | "payments"
+  | "reviews";
 
 interface SidebarProps {
   activeTab: SidebarTab;
@@ -21,6 +39,11 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       icon: <Compass className="w-5 h-5" />,
     },
     {
+      id: "destinations" as SidebarTab,
+      label: "Destinations",
+      icon: <MapPinned className="w-5 h-5" />,
+    },
+    {
       id: "bookings" as SidebarTab,
       label: "Bookings & Inquiries",
       icon: <Receipt className="w-5 h-5" />,
@@ -29,6 +52,16 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       id: "customers" as SidebarTab,
       label: "Customer Records",
       icon: <Users className="w-5 h-5" />,
+    },
+    {
+      id: "payments" as SidebarTab,
+      label: "Payments & Revenue",
+      icon: <CreditCard className="w-5 h-5" />,
+    },
+    {
+      id: "reviews" as SidebarTab,
+      label: "Reviews & Ratings",
+      icon: <Star className="w-5 h-5" />,
     },
   ];
 

@@ -1,4 +1,16 @@
-import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag } from "../types/travel";
+import {
+  TravelPackage,
+  BookingInquiry,
+  DashboardStats,
+  BookingStatus,
+  Customer,
+  CustomerNote,
+  CustomerStatus,
+  CustomerTag,
+  Destination,
+  PaymentRecord,
+  Review,
+} from "../types/travel";
 import { mockPackages } from "../data/mockPackages";
 import { mockBookings } from "../data/mockBookings";
 import { mockStats } from "../data/mockStats";
@@ -8,6 +20,9 @@ import { mockCustomers } from "../data/mockCustomers";
 let sessionPackages = [...mockPackages];
 let sessionBookings = [...mockBookings];
 let sessionCustomers: Customer[] = mockCustomers.map(c => ({ ...c, notes: [...c.notes], tags: [...c.tags] }));
+let sessionDestinations: Destination[] = [];
+let sessionPayments: PaymentRecord[] = [];
+let sessionReviews: Review[] = [];
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -46,6 +61,21 @@ export const travelApi = {
   async getBookings(): Promise<BookingInquiry[]> {
     await delay(300);
     return [...sessionBookings];
+  },
+
+  async getDestinations(): Promise<Destination[]> {
+    await delay(250);
+    return sessionDestinations.map((destination) => ({ ...destination }));
+  },
+
+  async getPayments(): Promise<PaymentRecord[]> {
+    await delay(250);
+    return sessionPayments.map((payment) => ({ ...payment }));
+  },
+
+  async getReviews(): Promise<Review[]> {
+    await delay(250);
+    return sessionReviews.map((review) => ({ ...review }));
   },
 
   async updateBookingStatus(id: string, status: BookingStatus): Promise<BookingInquiry> {
