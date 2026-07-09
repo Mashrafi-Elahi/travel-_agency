@@ -52,10 +52,10 @@ export default function Header({ title, subtitle }: HeaderProps) {
           </div>
           <div className="hidden sm:block text-left">
             <span className="text-xs font-bold text-slate-800 block leading-tight">
-              Mashrafe Elahi
+              Nuzhat Saima
             </span>
             <span className="text-[10px] text-slate-400 block font-medium">
-              mashrafeelahi8@gmail.com
+              nuzhatsaima.16@gmail.com
             </span>
           </div>
         </div>

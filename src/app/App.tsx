@@ -6,10 +6,13 @@ import DashboardStats from "../components/dashboard/DashboardStats";
 import PackageFilter from "../components/packages/PackageFilter";
 import PackageGrid from "../components/packages/PackageGrid";
 import BookingTable from "../components/bookings/BookingTable";
+import CustomerStats from "../components/customers/CustomerStats";
+import CustomerTable from "../components/customers/CustomerTable";
+import CustomerProfile from "../components/customers/CustomerProfile";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus } from "../types/travel";
-import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X } from "lucide-react";
+import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag } from "../types/travel";
+import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users } from "lucide-react";
 
 export default function App() {
   // Navigation tab state
@@ -19,6 +22,7 @@ export default function App() {
   const [stats, setStats] = useState<StatsType | null>(null);
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [bookings, setBookings] = useState<BookingInquiry[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filter/Search states
@@ -28,6 +32,11 @@ export default function App() {
 
   const [bookingSearch, setBookingSearch] = useState<string>("");
   const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("All");
+
+  const [customerSearch, setCustomerSearch] = useState<string>("");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerStatusFilter, setCustomerStatusFilter] = useState<string>("All");
+  const [customerSort, setCustomerSort] = useState<string>("name-asc");
 
   // Operation states
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
@@ -44,14 +53,16 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsData, packagesData, bookingsData] = await Promise.all([
+      const [statsData, packagesData, bookingsData, customersData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
+        travelApi.getCustomers(),
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
+      setCustomers(customersData);
     } catch (err) {
       console.error("Error loading travel agency data:", err);
     } finally {
@@ -184,17 +195,63 @@ export default function App() {
     });
   }, [bookings, bookingSearch, bookingStatusFilter]);
 
+  // Filter customers based on search query and status
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((c) => {
+      const matchesStatus = customerStatusFilter === "All" || c.status === customerStatusFilter;
+      if (!matchesStatus) return false;
+      if (!customerSearch) return true;
+      const search = customerSearch.toLowerCase();
+      return (
+        c.name.toLowerCase().includes(search) ||
+        c.email.toLowerCase().includes(search) ||
+        c.phone.includes(search) ||
+        c.address.toLowerCase().includes(search)
+      );
+    });
+  }, [customers, customerSearch, customerStatusFilter]);
+
+  // Handle adding a note to a customer
+  const handleAddCustomerNote = async (customerId: string, noteText: string) => {
+    const newNote = await travelApi.addCustomerNote(customerId, noteText);
+    setCustomers((prev) => prev.map((c) => c.id === customerId ? { ...c, notes: [newNote, ...c.notes] } : c));
+    setSelectedCustomer((prev) => prev && prev.id === customerId ? { ...prev, notes: [newNote, ...prev.notes] } : prev);
+  };
+
+  // Handle changing customer account status (ban/suspend/activate)
+  const handleCustomerStatusChange = async (customerId: string, status: CustomerStatus) => {
+    const updated = await travelApi.updateCustomerStatus(customerId, status);
+    setCustomers((prev) => prev.map((c) => c.id === customerId ? updated : c));
+    setSelectedCustomer((prev) => prev && prev.id === customerId ? updated : prev);
+  };
+
+  // Handle deleting a customer
+  const handleDeleteCustomer = async (customerId: string) => {
+    await travelApi.deleteCustomer(customerId);
+    setCustomers((prev) => prev.filter((c) => c.id !== customerId));
+    setSelectedCustomer(null);
+  };
+
+  // Handle toggling a tag on a customer
+  const handleToggleCustomerTag = async (customerId: string, tag: CustomerTag) => {
+    const updated = await travelApi.toggleCustomerTag(customerId, tag);
+    setCustomers((prev) => prev.map((c) => c.id === customerId ? updated : c));
+    setSelectedCustomer((prev) => prev && prev.id === customerId ? updated : prev);
+  };
+
   // Render variables depending on activeTab
-  const headerTitleMap = {
+  const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
     bookings: "Bookings & Inquiries Manager",
+    customers: "Customer Management",
   };
 
-  const headerSubtitleMap = {
+  const headerSubtitleMap: Record<SidebarTab, string> = {
     overview: "Real-time summary of sales, listings performance, and support inquiries",
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
     bookings: "Manage customer reservations, track departures, and confirm payments",
+    customers: "View customer profiles, booking history, and manage notes",
   };
 
   return (
@@ -387,6 +444,34 @@ export default function App() {
               />
             </div>
           )}
+
+          {/* 4. CUSTOMERS VIEW */}
+          {activeTab === "customers" && (
+            <div className="space-y-6 animate-fade-in">
+              <CustomerStats customers={customers} />
+
+              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                <SearchInput
+                  value={customerSearch}
+                  onChange={setCustomerSearch}
+                  placeholder="Search by name, email, phone, or address..."
+                />
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                  <Users className="w-4 h-4" />
+                  <span>Showing {filteredCustomers.length} of {customers.length} customers</span>
+                </div>
+              </div>
+
+              <CustomerTable
+                customers={filteredCustomers}
+                onViewProfile={(customer) => setSelectedCustomer(customer)}
+                statusFilter={customerStatusFilter}
+                onStatusFilterChange={setCustomerStatusFilter}
+                sortBy={customerSort}
+                onSortChange={setCustomerSort}
+              />
+            </div>
+          )}
         </>
       )}
 
@@ -512,6 +597,20 @@ export default function App() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* --- CUSTOMER PROFILE MODAL --- */}
+      {selectedCustomer && (
+        <CustomerProfile
+          customer={selectedCustomer}
+          bookings={bookings}
+          packages={packages}
+          onClose={() => setSelectedCustomer(null)}
+          onAddNote={handleAddCustomerNote}
+          onStatusChange={handleCustomerStatusChange}
+          onDelete={handleDeleteCustomer}
+          onTagToggle={handleToggleCustomerTag}
+        />
       )}
     </DashboardLayout>
   );
