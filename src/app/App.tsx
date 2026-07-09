@@ -12,7 +12,75 @@ import CustomerProfile from "../components/customers/CustomerProfile";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
 import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag } from "../types/travel";
-import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users } from "lucide-react";
+import { Compass, CalendarDays, Plus, RefreshCw, X, Users, MapPinned, CreditCard, Star, ListChecks } from "lucide-react";
+
+interface ModulePlaceholderProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  checklist: string[];
+}
+
+function ModulePlaceholder({ icon, title, description, checklist }: ModulePlaceholderProps) {
+  return (
+    <div className="animate-fade-in bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+      <div className="p-6 lg:p-8 border-b border-slate-100 flex flex-col sm:flex-row sm:items-start gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+          {icon}
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 font-display">{title}</h3>
+          <p className="text-sm text-slate-500 mt-1 max-w-2xl">{description}</p>
+        </div>
+      </div>
+
+      <div className="p-6 lg:p-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {checklist.map((item) => (
+            <div key={item} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+              <ListChecks className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
+              <span className="text-sm font-medium text-slate-700">{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type PackageModalMode = "create" | "edit";
+
+interface PackageFormState {
+  title: string;
+  destination: string;
+  category: string;
+  price: string;
+  duration: string;
+  image: string;
+  rating: string;
+  status: PackageStatus;
+  description: string;
+}
+
+const packageImageByCategory: Record<string, string> = {
+  Beach: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  Mountain: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=800&q=80",
+  Adventure: "https://images.unsplash.com/photo-1533240332313-0db49b439ad3?auto=format&fit=crop&w=800&q=80",
+  Cultural: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+  "City Break": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=800&q=80",
+};
+
+const createPackageForm = (category = "Beach"): PackageFormState => ({
+  title: "",
+  destination: "",
+  category,
+  price: "",
+  duration: "7 days",
+  image: packageImageByCategory[category] || packageImageByCategory.Beach,
+  rating: "4.8",
+  status: "Active",
+  description: "",
+});
 
 export default function App() {
   // Navigation tab state
