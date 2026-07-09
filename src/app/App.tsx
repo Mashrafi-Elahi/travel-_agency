@@ -11,10 +11,13 @@ import StatusBadge from "../components/bookings/StatusBadge";
 import CustomerStats from "../components/customers/CustomerStats";
 import CustomerTable from "../components/customers/CustomerTable";
 import CustomerProfile from "../components/customers/CustomerProfile";
+import PaymentSummary from "../components/payments/PaymentSummary";
+import PaymentTable from "../components/payments/PaymentTable";
+import ReviewList from "../components/reviews/ReviewList";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, Inquiry, InquiryStatus } from "../types/travel";
-import { Compass, CalendarDays, Plus, RefreshCw, Layers, X, Users, MessageSquare } from "lucide-react";
+import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, Destination, Inquiry, InquiryStatus, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
+import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users, MessageSquare } from "lucide-react";
 import InquiryTable from "../components/inquiries/InquiryTable";
 import InquiryDetailModal from "../components/inquiries/InquiryDetailModal";
 import { mockStaff } from "../data/mockInquiries";
@@ -62,6 +65,8 @@ export default function App() {
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [bookings, setBookings] = useState<BookingInquiry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -92,17 +97,21 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsData, packagesData, bookingsData, customersData, inquiriesData] = await Promise.all([
+      const [statsData, packagesData, bookingsData, customersData, paymentsData, reviewsData, inquiriesData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
         travelApi.getCustomers(),
+        travelApi.getPayments(),
+        travelApi.getReviews(),
         travelApi.getInquiries(),
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
       setCustomers(customersData);
+      setPayments(paymentsData);
+      setReviews(reviewsData);
       setInquiries(inquiriesData);
     } catch (err) {
       console.error("Error loading travel agency data:", err);
@@ -402,6 +411,25 @@ export default function App() {
     setSelectedCustomer((prev) => prev && prev.id === customerId ? updated : prev);
   };
 
+  // Handle changing payment settlement status
+  const handlePaymentStatusChange = async (id: string, status: PaymentStatus) => {
+    try {
+      const updated = await travelApi.updatePaymentStatus(id, status);
+      setPayments((prev) => prev.map((payment) => payment.id === id ? updated : payment));
+    } catch (err) {
+      alert("Failed to update payment status. Please try again.");
+    }
+  };
+
+  // Handle approving or hiding customer reviews
+  const handleReviewStatusChange = async (id: string, status: ReviewStatus) => {
+    try {
+      const updated = await travelApi.updateReviewStatus(id, status);
+      setReviews((prev) => prev.map((review) => review.id === id ? updated : review));
+    } catch (err) {
+      alert("Failed to update review status. Please try again.");
+    }
+  };
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
@@ -409,6 +437,8 @@ export default function App() {
     bookings: "Bookings & Inquiries Manager",
     inquiries: "Inquiry Management",
     customers: "Customer Management",
+    payments: "Payments & Revenue",
+    reviews: "Reviews & Ratings",
   };
 
   const headerSubtitleMap: Record<SidebarTab, string> = {
@@ -418,6 +448,8 @@ export default function App() {
     bookings: "Manage customer reservations, track departures, and confirm payments",
     inquiries: "Review client inquiries before booking, assign staff, and convert hot leads to bookings",
     customers: "View customer profiles, booking history, and manage notes",
+    payments: "Track booking payments, revenue, and refund status.",
+    reviews: "Monitor customer feedback and package ratings.",
   };
 
   return (
@@ -676,6 +708,27 @@ export default function App() {
                 onStatusFilterChange={setCustomerStatusFilter}
                 sortBy={customerSort}
                 onSortChange={setCustomerSort}
+              />
+            </div>
+          )}
+
+          {/* 5. PAYMENTS VIEW */}
+          {activeTab === "payments" && (
+            <div className="space-y-6 animate-fade-in">
+              <PaymentSummary payments={payments} />
+              <PaymentTable
+                payments={payments}
+                onStatusChange={handlePaymentStatusChange}
+              />
+            </div>
+          )}
+
+          {/* 6. REVIEWS VIEW */}
+          {activeTab === "reviews" && (
+            <div className="space-y-6 animate-fade-in">
+              <ReviewList
+                reviews={reviews}
+                onStatusChange={handleReviewStatusChange}
               />
             </div>
           )}

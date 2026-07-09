@@ -1,6 +1,6 @@
 export type PackageStatus = "Active" | "Inactive" | "Draft";
 export type BookingStatus = "Pending" | "Confirmed" | "Cancelled" | "Completed";
-export type PaymentStatus = "Pending" | "Paid" | "Partial" | "Refunded";
+export type PaymentStatus = "Pending" | "Paid" | "Unpaid" | "Partial" | "Refunded";
 
 export interface Destination {
   id: string;
@@ -87,4 +87,29 @@ export interface DashboardStats {
   revenue: number;
   totalPackages: number;
   pendingInquiries: number;
+}
+
+
+
+export interface PaymentRecord {
+  id: string;
+  bookingId: string;
+  customerName: string;
+  packageTitle: string;
+  amount: number;
+  method: string;
+  status: PaymentStatus;
+  date: string;
+}
+
+export type ReviewStatus = "Approved" | "Hidden" | "Pending";
+
+export interface Review {
+  id: string;
+  customerName: string;
+  packageTitle: string;
+  rating: number;
+  comment: string;
+  reviewDate: string;
+  status: ReviewStatus;
 }
