@@ -24,7 +24,7 @@ export default function BookingTable({ bookings, onStatusChange, isUpdating }: B
       <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
         <div>
           <h3 className="text-base font-semibold text-slate-900 font-display">Recent Bookings & Inquiries</h3>
-          <p className="text-xs text-slate-500 mt-1">Manage active travel requests and confirmation statuses</p>
+          <p className="text-xs text-slate-500 mt-1">Manage active travel requests & confirmation statuses</p>
         </div>
         <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-50 text-slate-600">
           {bookings.length} Total
