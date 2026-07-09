@@ -139,62 +139,19 @@ export const travelApi = {
     return [...sessionBookings];
   },
 
-  // --- Destination Management API ---
-
   async getDestinations(): Promise<Destination[]> {
-    await delay(300);
-    return hydrateDestinationCounts(sessionDestinations).map((destination) => ({ ...destination }));
-  },
-
-  async addDestination(destination: Omit<Destination, "id" | "availablePackages">): Promise<Destination> {
     await delay(250);
-    const createdDestination: Destination = {
-      ...destination,
-      id: `dest-${Date.now()}`,
-      image: destination.image || defaultDestinationImage,
-      availablePackages: 0,
-    };
-    sessionDestinations = [createdDestination, ...sessionDestinations];
-    return { ...createdDestination };
+    return sessionDestinations.map((destination) => ({ ...destination }));
   },
 
-  async updateDestination(destinationId: string, updates: Partial<Omit<Destination, "id" | "availablePackages">>): Promise<Destination> {
+  async getPayments(): Promise<PaymentRecord[]> {
     await delay(250);
-    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
-    if (index === -1) {
-      throw new Error(`Destination with ID ${destinationId} not found`);
-    }
-
-    sessionDestinations[index] = {
-      ...sessionDestinations[index],
-      ...updates,
-    };
-
-    return { ...hydrateDestinationCounts([sessionDestinations[index]])[0] };
+    return sessionPayments.map((payment) => ({ ...payment }));
   },
 
-  async deleteDestination(destinationId: string): Promise<void> {
+  async getReviews(): Promise<Review[]> {
     await delay(250);
-    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
-    if (index === -1) {
-      throw new Error(`Destination with ID ${destinationId} not found`);
-    }
-    sessionDestinations = sessionDestinations.filter((destination) => destination.id !== destinationId);
-  },
-
-  async toggleDestinationPopular(destinationId: string): Promise<Destination> {
-    await delay(200);
-    const index = sessionDestinations.findIndex((destination) => destination.id === destinationId);
-    if (index === -1) {
-      throw new Error(`Destination with ID ${destinationId} not found`);
-    }
-
-    sessionDestinations[index] = {
-      ...sessionDestinations[index],
-      popular: !sessionDestinations[index].popular,
-    };
-
-    return { ...hydrateDestinationCounts([sessionDestinations[index]])[0] };
+    return sessionReviews.map((review) => ({ ...review }));
   },
 
   async updateBookingStatus(id: string, status: BookingStatus): Promise<BookingInquiry> {

@@ -1,0 +1,888 @@
+# Travel Agency Dashboard — Complete Module Feature List
+
+## 1. Dashboard Overview Module
+
+### Purpose
+
+Admin can quickly see the business summary of the travel agency.
+
+### Features
+
+* Show total bookings.
+* Show total revenue.
+* Show total active packages.
+* Show pending inquiries.
+* Show recent bookings.
+* Show popular destinations.
+* Show booking status summary: Pending, Confirmed, Cancelled, Completed.
+
+### MVP Version
+
+* 4 summary cards.
+* Recent booking list.
+* Mock revenue chart or simple stat section.
+
+---
+
+## 2. Travel Package Management Module
+
+### Purpose
+
+Admin can view and manage travel packages.
+
+### Features
+
+* Add travel package.
+* View package list.
+* Edit package details.
+* Delete package.
+* Show package image.
+* Show package title.
+* Show destination.
+* Show category.
+* Show price.
+* Show duration.
+* Show rating.
+* Show package status: Active, Inactive, Draft.
+* Search package by title or destination.
+* Filter package by category.
+* Filter package by status.
+
+### Package Data Fields
+
+* Package ID
+* Package title
+* Destination
+* Category
+* Price
+* Duration
+* Image
+* Rating
+* Status
+* Description
+
+### MVP Version
+
+* Package cards with mock data.
+* Search and filter.
+* Status badge.
+
+---
+
+## 3. Destination Management Module
+
+### Purpose
+
+Admin can manage available travel destinations.
+
+### Features
+
+* Add destination.
+* View destination list.
+* Edit destination.
+* Delete destination.
+* Show destination image.
+* Show country/city.
+* Show number of available packages.
+* Mark destination as popular.
+* Search destination.
+
+### Destination Data Fields
+
+* Destination ID
+* Destination name
+* Country
+* Image
+* Description
+* Popular status
+
+### MVP Version
+
+* Destination cards can be included inside package cards.
+* Separate destination page optional.
+
+---
+
+## 4. Booking Management Module
+
+### Purpose
+
+Admin can view and manage customer bookings.
+
+### Features
+
+* View booking list.
+* View booking details.
+* Update booking status.
+* Search booking by customer name.
+* Filter booking by status.
+* Filter booking by date.
+* Show customer information.
+* Show selected package.
+* Show booking date.
+* Show payment status.
+* Cancel booking.
+
+### Booking Status
+
+* Pending
+* Confirmed
+* Cancelled
+* Completed
+
+### Booking Data Fields
+
+* Booking ID
+* Customer name
+* Customer email
+* Customer phone
+* Package title
+* Destination
+* Booking date
+* Travel date
+* Number of travelers
+* Total amount
+* Booking status
+* Payment status
+
+### MVP Version
+
+* Booking/inquiry table.
+* Status update dropdown.
+* Mock data only.
+
+---
+
+## 5. Inquiry Management Module
+
+### Purpose
+
+Admin can handle customer inquiries before booking confirmation.
+
+### Features
+
+* View inquiry list.
+* View customer message.
+* Update inquiry status.
+* Assign inquiry to staff.
+* Search inquiry by customer name.
+* Filter inquiry by status.
+* Convert inquiry to booking.
+
+### Inquiry Status
+
+* New
+* Contacted
+* Follow-up
+* Converted
+* Closed
+
+### Inquiry Data Fields
+
+* Inquiry ID
+* Customer name
+* Email
+* Phone
+* Interested package
+* Destination
+* Message
+* Inquiry date
+* Status
+
+### MVP Version
+
+* Can be combined with Booking module as “Booking/Inquiry List”.
+
+---
+
+## 6. Customer Management Module
+
+### Purpose
+
+Admin can manage customer records.
+
+### Features
+
+* View customer list.
+* View customer profile.
+* Search customer.
+* Show customer booking history.
+* Show total spending.
+* Show contact information.
+* Add customer note.
+
+### Customer Data Fields
+
+* Customer ID
+* Name
+* Email
+* Phone
+* Address
+* Total bookings
+* Total spent
+* Last booking date
+
+### MVP Version
+
+* Optional.
+* Can show customer name inside booking table only.
+
+---
+
+## 7. Payment & Revenue Module
+
+### Purpose
+
+Admin can track payment and revenue information.
+
+### Features
+
+* Show total revenue.
+* Show paid bookings.
+* Show unpaid bookings.
+* Show refunded bookings.
+* Show payment method.
+* Filter payment by status.
+* Show monthly revenue summary.
+
+### Payment Status
+
+* Paid
+* Unpaid
+* Partial
+* Refunded
+
+### MVP Version
+
+* Revenue summary card only.
+* Payment status can be shown in booking table.
+
+---
+
+## 8. Review & Rating Module
+
+### Purpose
+
+Admin can monitor customer feedback.
+
+### Features
+
+* View reviews.
+* Show rating by package.
+* Approve or hide review.
+* Search reviews.
+* Filter by rating.
+* Show average rating.
+
+### Review Data Fields
+
+* Review ID
+* Customer name
+* Package title
+* Rating
+* Comment
+* Review date
+* Status
+
+### MVP Version
+
+* Show package rating only.
+* Full review page optional.
+
+---
+
+## 9. User/Admin Management Module
+
+### Purpose
+
+Admin can manage internal staff or dashboard users.
+
+### Features
+
+* Add admin/staff user.
+* Assign role.
+* View user list.
+* Enable/disable user.
+* Role-based access.
+
+### Roles
+
+* Admin
+* Manager
+* Staff
+* Viewer
+
+### MVP Version
+
+* Not required for 4-hour frontend MVP.
+* Can be future feature.
+
+---
+
+## 10. Authentication Module
+
+### Purpose
+
+Secure dashboard access.
+
+### Features
+
+* Login page.
+* Logout.
+* Protected dashboard route.
+* Store fake auth state.
+* Later connect with JWT backend.
+* Role-based page access.
+
+### MVP Version
+
+* Optional fake login.
+* Can be skipped if time is short.
+
+---
+
+## 11. Notification Module
+
+### Purpose
+
+Notify admin about important updates.
+
+### Features
+
+* New inquiry notification.
+* New booking notification.
+* Payment pending alert.
+* Cancelled booking alert.
+* Low package availability alert.
+
+### MVP Version
+
+* Simple notification icon in header.
+* Static mock notifications.
+
+---
+
+## 12. Settings Module
+
+### Purpose
+
+Allow admin to manage basic agency settings.
+
+### Features
+
+* Agency name.
+* Logo.
+* Contact email.
+* Phone number.
+* Currency setting.
+* Theme setting.
+
+### MVP Version
+
+* Optional static settings page.
+
+---
+
+# Recommended MVP Modules for 4-Hour Demo
+
+For a fast frontend MVP, build only these modules first:
+
+## Must-Have
+
+1. Dashboard Overview
+2. Travel Package Management
+3. Search & Filter
+4. Booking/Inquiry Management
+
+## Optional
+
+5. Customer Management
+6. Payment Status
+7. Notification Header
+
+---
+
+# Best MVP Feature Scope
+
+## Dashboard Page Should Include
+
+### Section 1: Header
+
+* Page title: Travel Agency Dashboard
+* Search placeholder
+* Admin profile/avatar
+
+### Section 2: Summary Cards
+
+* Total Bookings
+* Total Revenue
+* Active Packages
+* Pending Inquiries
+
+### Section 3: Package Cards
+
+* Image
+* Title
+* Destination
+* Price
+* Rating
+* Status
+
+### Section 4: Search & Filter
+
+* Search by package/destination
+* Filter by category
+* Filter by status
+
+### Section 5: Booking/Inquiry Table
+
+* Customer name
+* Package
+* Destination
+* Date
+* Status
+* Status update dropdown
+
+---
+
+# Final Demo Flow
+
+1. Open dashboard.
+2. Explain this is a Travel Agency Dashboard Frontend MVP.
+3. Show summary cards.
+4. Show package cards.
+5. Search package by destination.
+6. Filter package by category/status.
+7. Show booking/inquiry list.
+8. Update booking status.
+9. Explain mock data is used.
+10. Explain backend API can be connected later.
+
+---
+
+# Final Feature Priority
+
+| Priority | Module                     | Need for MVP |
+| -------- | -------------------------- | ------------ |
+| High     | Dashboard Overview         | Required     |
+| High     | Package Management         | Required     |
+| High     | Search & Filter            | Required     |
+| High     | Booking/Inquiry Management | Required     |
+| Medium   | Customer Management        | Optional     |
+| Medium   | Payment/Revenue            | Partial      |
+| Low      | Review Module              | Future       |
+| Low      | Admin/User Management      | Future       |
+| Low      | Settings                   | Future       |
+| Low      | Notification               | Optional     |
+
+---
+
+# Best Final Module Name for Your Project
+
+*Travel Agency Admin Dashboard MVP*
+
+Core modules:
+
+1. Dashboard Overview Module
+2. Travel Package Module
+3. Package Search & Filter Module
+4. Booking & Inquiry Management Module
+5. Mock API Service Module
+6. Layout & Navigation Module
+7. Demo & Documentation Module
+
+---
+
+# 7-Person Implementation Handoff
+
+Use this section for the actual team split. The current project is a React 19 + Vite + Tailwind frontend. It does not use React Router yet. The dashboard is controlled by tab state inside `src/app/App.tsx`, and the sidebar tab type lives in `src/components/layout/Sidebar.tsx`.
+
+Current important files:
+
+* `src/app/App.tsx` - owns active tab, fetches mock data, filters lists, renders each screen.
+* `src/components/layout/Sidebar.tsx` - owns `SidebarTab` union and menu items.
+* `src/components/layout/DashboardLayout.tsx` - wraps sidebar, header, mobile menu, page scroll.
+* `src/types/travel.ts` - shared TypeScript types.
+* `src/services/travelApi.ts` - fake async API over in-memory mock data.
+* `src/data/*` - mock datasets.
+* `src/components/common/*` - reusable search, empty, loading UI.
+
+Global rules for everyone:
+
+* Mock data only. No paid API. No backend dependency.
+* Use Tailwind classes already used in the app.
+* Use `lucide-react` icons only.
+* Keep components typed with interfaces from `src/types/travel.ts`.
+* Keep code client-side and demo-ready.
+* Do not delete or rename other people's files.
+* Run `npm run build` before submitting.
+* If touching `App.tsx` or `Sidebar.tsx`, coordinate first because those files will conflict.
+
+Recommended merge order:
+
+1. Module 1 first because it prepares common layout, tabs, and shared contracts.
+2. Modules 2 to 7 can then work mostly in their own component/data files.
+3. One person should do final integration in `App.tsx` after all module components exist.
+
+## Module 1 - App Shell, Navigation, Shared Contracts
+
+Owner goal: make the project ready for 7 modules without everyone fighting inside the same files.
+
+Files to work on:
+
+* `src/components/layout/Sidebar.tsx`
+* `src/components/layout/Header.tsx`
+* `src/app/App.tsx`
+* `src/types/travel.ts`
+* `src/services/travelApi.ts`
+
+What to implement:
+
+* Extend `SidebarTab` to support these tabs: `overview`, `packages`, `destinations`, `bookings`, `customers`, `payments`, `reviews`.
+* Add sidebar menu items for all 7 tabs using lucide icons.
+* Add clean placeholder sections in `App.tsx` for tabs that are not implemented yet.
+* Add type stubs in `src/types/travel.ts` for `Destination`, `PaymentRecord`, and `Review`.
+* Add mock API function stubs in `travelApi.ts`: `getDestinations`, `getPayments`, `getReviews`.
+* Keep existing dashboard/package/booking/customer behavior working.
+
+Copy-paste prompt for the person:
+
+```text
+You are working in a React 19 + Vite + Tailwind travel agency dashboard. First inspect `src/app/App.tsx`, `src/components/layout/Sidebar.tsx`, `src/types/travel.ts`, and `src/services/travelApi.ts`.
+
+Implement the App Shell, Navigation, and Shared Contracts module.
+
+Requirements:
+- Extend `SidebarTab` in `src/components/layout/Sidebar.tsx` to include: overview, packages, destinations, bookings, customers, payments, reviews.
+- Add sidebar menu items for those 7 modules using `lucide-react` icons.
+- Update `App.tsx` header title/subtitle maps for every tab.
+- Add placeholder render sections for missing tabs so clicking sidebar items never breaks the app.
+- Add TypeScript interfaces in `src/types/travel.ts`:
+  - Destination: id, name, country, image, description, packageCount, popular
+  - PaymentRecord: id, bookingId, customerName, packageTitle, amount, method, status, date
+  - Review: id, customerName, packageTitle, rating, comment, reviewDate, status
+- Add fake async functions in `src/services/travelApi.ts`: getDestinations(), getPayments(), getReviews().
+- Do not delete existing package, booking, customer, or dashboard behavior.
+- Keep all data mock/in-memory only.
+- Run `npm run build`.
+```
+
+Acceptance check:
+
+* Sidebar has 7 clickable items.
+* Existing 4 tabs still work.
+* New tabs show clean placeholder content instead of blank screen.
+* TypeScript build passes.
+
+## Module 2 - Dashboard Overview Analytics
+
+Owner goal: make the first screen look like a real agency control dashboard.
+
+Files to work on:
+
+* `src/components/dashboard/DashboardStats.tsx`
+* `src/components/dashboard/SummaryCard.tsx`
+* create `src/components/dashboard/BookingStatusSummary.tsx`
+* create `src/components/dashboard/PopularDestinations.tsx`
+* optionally update `src/app/App.tsx` only to render the new components
+
+What to implement:
+
+* Keep the 4 summary cards.
+* Add booking status breakdown: Pending, Confirmed, Completed, Cancelled.
+* Add popular destination preview using packages or destination mock data.
+* Add small revenue trend section using mock monthly numbers.
+* Keep it responsive for mobile.
+
+Copy-paste prompt for the person:
+
+```text
+You are working in a React 19 + Vite + Tailwind travel agency dashboard. Inspect `src/app/App.tsx`, `src/components/dashboard/DashboardStats.tsx`, `src/components/bookings/BookingTable.tsx`, and `src/types/travel.ts`.
+
+Implement the Dashboard Overview Analytics module.
+
+Requirements:
+- Keep existing `DashboardStats` summary cards working.
+- Create `src/components/dashboard/BookingStatusSummary.tsx`.
+- It receives bookings as props and shows counts for Pending, Confirmed, Completed, Cancelled.
+- Create `src/components/dashboard/PopularDestinations.tsx`.
+- It receives packages as props and shows top destinations/package categories with image thumbnails.
+- Add a compact mock revenue trend section using simple bars or stat rows. Do not install chart libraries.
+- Plug these components into the `overview` section of `src/app/App.tsx`.
+- Use Tailwind style matching the current white cards, slate borders, brand color, and lucide icons.
+- Use `useMemo` for derived counts.
+- Do not use paid APIs or backend.
+- Run `npm run build`.
+```
+
+Acceptance check:
+
+* Overview tab shows cards, booking status breakdown, popular destinations, recent bookings, hot packages.
+* No layout overflow on mobile.
+* TypeScript build passes.
+
+## Module 3 - Travel Package Management
+
+Owner goal: make package management feel complete, not just cards.
+
+Files to work on:
+
+* `src/components/packages/PackageCard.tsx`
+* `src/components/packages/PackageGrid.tsx`
+* `src/components/packages/PackageFilter.tsx`
+* create `src/components/packages/PackageFormModal.tsx`
+* update package state/actions in `src/app/App.tsx`
+* optionally add methods in `src/services/travelApi.ts`
+
+What to implement:
+
+* Fix the current status dropdown option text if it still says something random instead of "All Statuses".
+* Move the add package modal out of `App.tsx` into `PackageFormModal.tsx`.
+* Add edit package support.
+* Add delete package support with browser confirm.
+* Add duration and description fields if shared type has been extended.
+* Preserve search by title/destination, category filter, and status filter.
+
+Copy-paste prompt for the person:
+
+```text
+You are working in a React 19 + Vite + Tailwind travel agency dashboard. Inspect `src/app/App.tsx`, `src/components/packages/*`, `src/types/travel.ts`, and `src/services/travelApi.ts`.
+
+Implement the Travel Package Management module.
+
+Requirements:
+- Fix any wrong filter label in `PackageFilter.tsx`; the all-status option should say "All Statuses".
+- Create `src/components/packages/PackageFormModal.tsx` for add/edit package forms.
+- Move the existing add package form logic from `App.tsx` into this reusable modal.
+- Add edit support: clicking Edit on a package opens the modal with existing values.
+- Add delete support: clicking Delete asks for confirmation and removes the package from local state/mock API.
+- Update `TravelPackage` type if needed with optional `duration` and `description`, but do not break existing mock data.
+- Keep package search/filter working.
+- Keep UI consistent: white cards, rounded panels, slate borders, brand blue buttons, lucide icons.
+- Do not add backend or paid API.
+- Run `npm run build`.
+```
+
+Acceptance check:
+
+* User can add, edit, and delete packages in the browser session.
+* Filters still work after add/edit/delete.
+* Package cards still render images, title, destination, price, rating, status.
+* TypeScript build passes.
+
+## Module 4 - Destination Management
+
+Owner goal: add a real destination tab that connects to travel packages.
+
+Files to work on:
+
+* create `src/data/mockDestinations.ts`
+* create `src/components/destinations/DestinationGrid.tsx`
+* create `src/components/destinations/DestinationCard.tsx`
+* create `src/components/destinations/DestinationFilter.tsx`
+* update `src/services/travelApi.ts`
+* final integration in `src/app/App.tsx`
+
+What to implement:
+
+* Destination list with cards.
+* Search destination by name or country.
+* Filter popular vs all.
+* Toggle popular status in local state.
+* Show package count per destination.
+* Use image, name, country, description, package count, popular badge.
+
+Copy-paste prompt for the person:
+
+```text
+You are working in a React 19 + Vite + Tailwind travel agency dashboard. Inspect `src/types/travel.ts`, `src/services/travelApi.ts`, `src/data/mockPackages.ts`, `src/app/App.tsx`, and existing package components for visual style.
+
+Implement the Destination Management module.
+
+Requirements:
+- Add or use a `Destination` interface with id, name, country, image, description, packageCount, popular.
+- Create `src/data/mockDestinations.ts` with 6-8 realistic destinations.
+- Add `getDestinations()` and `toggleDestinationPopular(id)` in `src/services/travelApi.ts` using an in-memory array.
+- Create:
+  - `src/components/destinations/DestinationGrid.tsx`
+  - `src/components/destinations/DestinationCard.tsx`
+  - `src/components/destinations/DestinationFilter.tsx`
+- Destination tab UI must include search, popular filter, destination cards, package count, and a popular badge/toggle.
+- Integrate into the `destinations` tab in `src/app/App.tsx` if Module 1 already added the tab. If not, only export the components and document the integration snippet.
+- Use Tailwind and lucide icons only.
+- No backend, no paid API.
+- Run `npm run build`.
+```
+
+Acceptance check:
+
+* Destinations tab shows real cards from mock data.
+* Search and popular filter work.
+* Popular toggle updates UI instantly.
+* TypeScript build passes.
+
+## Module 5 - Booking & Inquiry Management
+
+Owner goal: make bookings/inquiries usable for admin workflow.
+
+Files to work on:
+
+* `src/components/bookings/BookingTable.tsx`
+* `src/components/bookings/StatusBadge.tsx`
+* `src/components/bookings/StatusSelect.tsx`
+* create `src/components/bookings/BookingDetailsDrawer.tsx`
+* update `src/data/mockBookings.ts`
+* update `src/types/travel.ts`
+* update `src/services/travelApi.ts`
+
+What to implement:
+
+* Add richer booking fields: email, phone, travelDate, travelers, totalAmount, paymentStatus.
+* Add details drawer/modal when clicking a row.
+* Keep status update dropdown.
+* Add payment status badge.
+* Add date filter if time allows.
+* Keep the current booking table compact and mobile-safe.
+
+Copy-paste prompt for the person:
+
+```text
+You are working in a React 19 + Vite + Tailwind travel agency dashboard. Inspect `src/components/bookings/*`, `src/types/travel.ts`, `src/data/mockBookings.ts`, `src/services/travelApi.ts`, and the bookings section in `src/app/App.tsx`.
+
+Implement the Booking & Inquiry Management module.
+
+Requirements:
+- Extend `BookingInquiry` with optional fields: customerEmail, customerPhone, travelDate, travelers, totalAmount, paymentStatus.
+- Update `src/data/mockBookings.ts` with realistic values for those fields.
+- Keep existing status values: Pending, Confirmed, Cancelled, Completed.
+- Add payment status badge support: Paid, Unpaid, Partial, Refunded.
+- Create `src/components/bookings/BookingDetailsDrawer.tsx`.
+- Clicking a booking row opens the drawer/modal with full booking/customer/package/payment details.
+- Keep status update dropdown working and updating local state.
+- Add filter by booking status; date filter is optional if time is short.
+- Use existing Tailwind style and lucide icons.
+- No backend, no paid API.
+- Run `npm run build`.
+```
+
+Acceptance check:
+
+* Booking table still shows normal rows.
+* Clicking a row opens details.
+* Status change still works.
+* Payment status is visible.
+* TypeScript build passes.
+
+## Module 6 - Customer Management
+
+Owner goal: polish customer records into a strong demo feature.
+
+Files to work on:
+
+* `src/components/customers/CustomerStats.tsx`
+* `src/components/customers/CustomerTable.tsx`
+* `src/components/customers/CustomerProfile.tsx`
+* `src/data/mockCustomers.ts`
+* `src/services/travelApi.ts`
+* `src/types/travel.ts`
+
+What to implement:
+
+* Keep search by name/email/phone/address.
+* Keep status filter and sorting.
+* Profile modal should show booking history, notes, tags, total spent, last booking.
+* Add note should update instantly.
+* Customer status change should update instantly.
+* Tag toggle should update instantly.
+* Optional: keep AI insight mock local only. Do not call external AI.
+
+Copy-paste prompt for the person:
+
+```text
+You are working in a React 19 + Vite + Tailwind travel agency dashboard. Inspect `src/components/customers/*`, `src/data/mockCustomers.ts`, `src/services/travelApi.ts`, `src/types/travel.ts`, and the customers section in `src/app/App.tsx`.
+
+Implement/polish the Customer Management module.
+
+Requirements:
+- Preserve existing customer search, status filter, sorting, profile modal, notes, tags, and status actions.
+- Make the profile modal clearly show: customer contact info, total bookings, total spent, last booking date, tags, notes, and booking history from current bookings/packages.
+- Add empty states for customers with no bookings or no notes.
+- Make add-note work without page reload.
+- Make status change and tag toggle update both the table and open profile modal.
+- If using the existing mock AI insight methods, keep them local fake responses only. Do not call Google/OpenAI/paid APIs.
+- Keep mobile layout usable.
+- Run `npm run build`.
+```
+
+Acceptance check:
+
+* Customers tab is searchable and sortable.
+* Profile modal opens and actions work.
+* No paid/external AI request happens.
+* TypeScript build passes.
+
+## Module 7 - Payment, Revenue, Reviews, and Demo Polish
+
+Owner goal: add the final demo layer: money tracking plus credibility/social proof.
+
+Files to work on:
+
+* create `src/data/mockPayments.ts`
+* create `src/data/mockReviews.ts`
+* create `src/components/payments/PaymentSummary.tsx`
+* create `src/components/payments/PaymentTable.tsx`
+* create `src/components/reviews/ReviewList.tsx`
+* update `src/services/travelApi.ts`
+* final integration in `src/app/App.tsx`
+
+What to implement:
+
+* Payments tab with total revenue, paid, unpaid, partial, refunded totals.
+* Payment table with customer, package, amount, method, status, date.
+* Filter payment by status.
+* Reviews tab with average rating, rating filter, approve/hide action.
+* Use local mock data only.
+* Add a short README/demo section if time allows.
+
+Copy-paste prompt for the person:
+
+```text
+You are working in a React 19 + Vite + Tailwind travel agency dashboard. Inspect `src/types/travel.ts`, `src/services/travelApi.ts`, `src/components/bookings/StatusBadge.tsx`, `src/components/common/SearchInput.tsx`, and `src/app/App.tsx`.
+
+Implement the Payment, Revenue, Reviews, and Demo Polish module.
+
+Requirements:
+- Add/use `PaymentRecord` and `Review` interfaces in `src/types/travel.ts`.
+- Create `src/data/mockPayments.ts` and `src/data/mockReviews.ts`.
+- Add fake async API methods in `src/services/travelApi.ts`: getPayments(), updatePaymentStatus(), getReviews(), updateReviewStatus().
+- Create `src/components/payments/PaymentSummary.tsx` showing total revenue, paid amount, unpaid amount, refunded amount.
+- Create `src/components/payments/PaymentTable.tsx` with status filter and rows for customer/package/amount/method/status/date.
+- Create `src/components/reviews/ReviewList.tsx` showing average rating, rating filter, package title, customer name, comment, status, approve/hide buttons.
+- Integrate into `payments` and `reviews` tabs in `src/app/App.tsx` if Module 1 already added those tabs. If not, export components and include an integration note.
+- Keep all actions local/in-memory.
+- Use Tailwind and lucide icons only. Do not install chart libraries unless absolutely needed.
+- Run `npm run build`.
+```
+
+Acceptance check:
+
+* Payments tab shows revenue summary and filterable payment table.
+* Reviews tab shows reviews and approve/hide action.
+* No external service calls.
+* TypeScript build passes.
+
+## Final Integrator Checklist
+
+Use this after everyone submits:
+
+* `npm install` if dependencies are missing.
+* `npm run build`.
+* Open dashboard and click all 7 sidebar tabs.
+* Check mobile width using browser dev tools.
+* Confirm add/edit/delete package works.
+* Confirm booking status update works.
+* Confirm destination popular toggle works.
+* Confirm customer note/status/tag actions work.
+* Confirm payment/review filters work.
+* Fix copy text that looks like placeholder/debug text.
+* Keep demo story simple: overview -> packages -> bookings -> customers -> destinations -> payments -> reviews.

@@ -436,12 +436,9 @@ export default function App() {
   const headerSubtitleMap: Record<SidebarTab, string> = {
     overview: "Real-time summary of sales, listings performance, and support inquiries",
     packages: "Add, filter, and audit high-performing destination itineraries and listings",
-    destinations: "Create, search, and curate the destination catalog with popular flags and package counts",
     bookings: "Manage customer reservations, track departures, and confirm payments",
     inquiries: "Review client inquiries before booking, assign staff, and convert hot leads to bookings",
     customers: "View customer profiles, booking history, and manage notes",
-    payments: "Track booking payments, revenue, and refund status.",
-    reviews: "Monitor customer feedback and package ratings.",
   };
 
   return (
@@ -600,10 +597,7 @@ export default function App() {
             </div>
           )}
 
-          {/* 3. DESTINATIONS VIEW */}
-          {activeTab === "destinations" && <DestinationManager />}
-
-          {/* 4. BOOKINGS VIEW */}
+          {/* 3. BOOKINGS VIEW */}
           {activeTab === "bookings" && (
             <div className="space-y-6 animate-fade-in">
               {/* Bookings Filters Row */}
@@ -700,27 +694,6 @@ export default function App() {
                 onStatusFilterChange={setCustomerStatusFilter}
                 sortBy={customerSort}
                 onSortChange={setCustomerSort}
-              />
-            </div>
-          )}
-
-          {/* 5. PAYMENTS VIEW */}
-          {activeTab === "payments" && (
-            <div className="space-y-6 animate-fade-in">
-              <PaymentSummary payments={payments} />
-              <PaymentTable
-                payments={payments}
-                onStatusChange={handlePaymentStatusChange}
-              />
-            </div>
-          )}
-
-          {/* 6. REVIEWS VIEW */}
-          {activeTab === "reviews" && (
-            <div className="space-y-6 animate-fade-in">
-              <ReviewList
-                reviews={reviews}
-                onStatusChange={handleReviewStatusChange}
               />
             </div>
           )}

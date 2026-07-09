@@ -42,13 +42,13 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     },
     {
       id: "payments" as SidebarTab,
-      label: "Payments",
+      label: "Payments & Revenue",
       icon: <CreditCard className="w-5 h-5" />,
     },
     {
       id: "reviews" as SidebarTab,
-      label: "Reviews",
-      icon: <MessageSquare className="w-5 h-5" />,
+      label: "Reviews & Ratings",
+      icon: <Star className="w-5 h-5" />,
     },
   ];
 
