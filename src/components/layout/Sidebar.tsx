@@ -1,13 +1,7 @@
 import React from "react";
-<<<<<<< HEAD
 import { LayoutDashboard, Compass, Receipt, Users, Settings, HelpCircle, LogOut, CreditCard, MessageSquare } from "lucide-react";
 
-export type SidebarTab = "overview" | "packages" | "bookings" | "customers" | "payments" | "reviews";
-=======
-import { LayoutDashboard, Compass, Receipt, Users, ShieldAlert, Settings, HelpCircle, LogOut, MessageSquare } from "lucide-react";
-
-export type SidebarTab = "overview" | "packages" | "bookings" | "customers" | "inquiries";
->>>>>>> origin/Anika
+export type SidebarTab = "overview" | "packages" | "bookings" | "customers" | "inquiries" | "payments" | "reviews";
 
 interface SidebarProps {
   activeTab: SidebarTab;

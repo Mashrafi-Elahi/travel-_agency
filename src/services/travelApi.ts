@@ -1,29 +1,19 @@
-<<<<<<< HEAD
-import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
-=======
-import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, Inquiry, InquiryStatus } from "../types/travel";
->>>>>>> origin/Anika
+import { TravelPackage, BookingInquiry, DashboardStats, BookingStatus, Customer, CustomerNote, CustomerStatus, CustomerTag, Inquiry, InquiryStatus, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
 import { mockPackages } from "../data/mockPackages";
 import { mockBookings } from "../data/mockBookings";
 import { mockStats } from "../data/mockStats";
 import { mockCustomers } from "../data/mockCustomers";
-<<<<<<< HEAD
 import { mockPayments } from "../data/mockPayments";
 import { mockReviews } from "../data/mockReviews";
-=======
 import { mockInquiries } from "../data/mockInquiries";
->>>>>>> origin/Anika
 
 // In-memory data store for the current browser session
 let sessionPackages = [...mockPackages];
 let sessionBookings = [...mockBookings];
 let sessionCustomers: Customer[] = mockCustomers.map(c => ({ ...c, notes: [...c.notes], tags: [...c.tags] }));
-<<<<<<< HEAD
 let sessionPayments: PaymentRecord[] = [...mockPayments];
 let sessionReviews: Review[] = [...mockReviews];
-=======
-let sessionInquiries = [...mockInquiries];
->>>>>>> origin/Anika
+let sessionInquiries: Inquiry[] = [...mockInquiries];
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

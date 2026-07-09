@@ -14,11 +14,7 @@ import PaymentTable from "../components/payments/PaymentTable";
 import ReviewList from "../components/reviews/ReviewList";
 import SearchInput from "../components/common/SearchInput";
 import LoadingState from "../components/common/LoadingState";
-<<<<<<< HEAD
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
-import { Compass, CalendarDays, Plus, Filter, RefreshCw, Layers, X, Users } from "lucide-react";
-=======
-import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, Inquiry, InquiryStatus } from "../types/travel";
+import { TravelPackage, BookingInquiry, DashboardStats as StatsType, BookingStatus, PackageStatus, Customer, CustomerStatus, CustomerTag, Inquiry, InquiryStatus, PaymentRecord, PaymentStatus, Review, ReviewStatus } from "../types/travel";
 import { Compass, CalendarDays, Plus, RefreshCw, Layers, X, Users, MessageSquare } from "lucide-react";
 import InquiryTable from "../components/inquiries/InquiryTable";
 import InquiryDetailModal from "../components/inquiries/InquiryDetailModal";
@@ -57,7 +53,6 @@ const createPackageForm = (category = "Beach"): PackageFormState => ({
   status: "Active",
   description: "",
 });
->>>>>>> origin/Anika
 
 export default function App() {
   // Navigation tab state
@@ -68,13 +63,10 @@ export default function App() {
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [bookings, setBookings] = useState<BookingInquiry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-<<<<<<< HEAD
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-=======
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
->>>>>>> origin/Anika
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filter/Search states
@@ -101,32 +93,22 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-<<<<<<< HEAD
-      const [statsData, packagesData, bookingsData, customersData, paymentsData, reviewsData] = await Promise.all([
-=======
-      const [statsData, packagesData, bookingsData, customersData, inquiriesData] = await Promise.all([
->>>>>>> origin/Anika
+      const [statsData, packagesData, bookingsData, customersData, inquiriesData, paymentsData, reviewsData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
         travelApi.getCustomers(),
-<<<<<<< HEAD
+        travelApi.getInquiries(),
         travelApi.getPayments(),
         travelApi.getReviews(),
-=======
-        travelApi.getInquiries(),
->>>>>>> origin/Anika
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
       setCustomers(customersData);
-<<<<<<< HEAD
+      setInquiries(inquiriesData);
       setPayments(paymentsData);
       setReviews(reviewsData);
-=======
-      setInquiries(inquiriesData);
->>>>>>> origin/Anika
     } catch (err) {
       console.error("Error loading travel agency data:", err);
     } finally {
