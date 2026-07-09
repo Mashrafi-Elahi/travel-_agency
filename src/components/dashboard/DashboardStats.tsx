@@ -28,7 +28,7 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
         icon={<DollarSign className="w-5 h-5" />}
         iconBgColor="bg-emerald-50"
         iconTextColor="text-emerald-600"
-        description="Generated in current cycle"
+        description="Generated over the time"
         trend={{ value: "+8.2%", isPositive: true }}
       />
 
@@ -45,7 +45,7 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
 
       {/* Pending Inquiries */}
       <SummaryCard
-        title="Pending Inquiries"
+        title="Total Inquiries"
         value={stats.pendingInquiries}
         icon={<HelpCircle className="w-5 h-5" />}
         iconBgColor="bg-amber-50"

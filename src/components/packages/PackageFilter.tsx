@@ -68,7 +68,7 @@ export default function PackageFilter({
             backgroundRepeat: "no-repeat",
           }}
         >
-          <option value="All">All Statuses</option>
+          <option value="All">YEONJUN</option>
           {statuses.map((stat) => (
             <option key={stat} value={stat}>
               {stat}
