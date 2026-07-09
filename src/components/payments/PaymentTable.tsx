@@ -7,7 +7,7 @@ interface PaymentTableProps {
   onStatusChange: (id: string, status: PaymentStatus) => void;
 }
 
-const paymentStatuses: PaymentStatus[] = ["Paid", "Unpaid", "Partial", "Refunded"];
+const paymentStatuses: PaymentStatus[] = ["Paid", "Unpaid", "Pending", "Partial", "Refunded"];
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-US", {
@@ -25,6 +25,10 @@ function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
     Unpaid: {
       bg: "bg-amber-50 text-amber-700 border-amber-200/60",
       dot: "bg-amber-500",
+    },
+    Pending: {
+      bg: "bg-slate-100 text-slate-700 border-slate-200",
+      dot: "bg-slate-500",
     },
     Partial: {
       bg: "bg-sky-50 text-sky-700 border-sky-200/60",

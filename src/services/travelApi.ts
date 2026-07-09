@@ -6,6 +6,7 @@ import { mockCustomers } from "../data/mockCustomers";
 import { mockPayments } from "../data/mockPayments";
 import { mockReviews } from "../data/mockReviews";
 import { mockInquiries } from "../data/mockInquiries";
+import { mockDestinations } from "../data/mockDestinations";
 
 // In-memory data store for the current browser session
 let sessionPackages = [...mockPackages];
@@ -49,13 +50,34 @@ export const travelApi = {
     return [...sessionPackages];
   },
 
-  async addPackage(pkg: Omit<TravelPackage, "id">): Promise<TravelPackage> {
+  async addPackage(pkg: Omit<TravelPackage, "id"> & { id?: string }): Promise<TravelPackage> {
     await delay(250);
     const newPackage: TravelPackage = {
-      id: `pkg-${Date.now()}`,
+      id: pkg.id || `pkg-${Date.now()}`,
       ...pkg,
-    };
+    } as TravelPackage;
     sessionPackages = [newPackage, ...sessionPackages];
+
+    const destinationExists = sessionDestinations.some(
+      (destination) => destinationKey(`${destination.city}, ${destination.country}`) === destinationKey(newPackage.destination)
+    );
+
+    if (!destinationExists) {
+      const parsed = parsePackageDestination(newPackage.destination);
+      sessionDestinations = [
+        {
+          id: `dest-${Date.now()}`,
+          name: newPackage.destination,
+          city: parsed.city,
+          country: parsed.country,
+          image: newPackage.image || defaultDestinationImage,
+          description: `Auto-created destination linked to ${newPackage.title}.`,
+          popular: false,
+        },
+        ...sessionDestinations,
+      ];
+    }
+
     return { ...newPackage };
   },
 
@@ -364,14 +386,23 @@ Travel Intelligence Team`;
       status: "Converted"
     };
 
+    const pkg = sessionPackages.find(p => p.title.toLowerCase() === inquiry.interestedPackage.toLowerCase());
+    const totalAmount = pkg ? pkg.price * 2 : 3000; // Assuming 2 travelers
+
     // Create a new BookingInquiry
     const newBooking: BookingInquiry = {
       id: `bkg-${Date.now()}`,
       customerName: inquiry.customerName,
+      customerEmail: inquiry.email,
+      customerPhone: inquiry.phone,
       packageTitle: inquiry.interestedPackage,
       destination: inquiry.destination,
       date: new Date().toISOString().split("T")[0],
-      status: "Pending"
+      travelDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 30 days from now
+      numberOfTravelers: 2,
+      totalAmount: totalAmount,
+      status: "Pending",
+      paymentStatus: "Pending"
     };
 
     sessionBookings = [newBooking, ...sessionBookings];

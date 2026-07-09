@@ -5,6 +5,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import DashboardStats from "../components/dashboard/DashboardStats";
 import PackageFilter from "../components/packages/PackageFilter";
 import PackageGrid from "../components/packages/PackageGrid";
+import DestinationManager from "../components/destinations/DestinationManager";
 import BookingTable from "../components/bookings/BookingTable";
 import StatusBadge from "../components/bookings/StatusBadge";
 import CustomerStats from "../components/customers/CustomerStats";
@@ -86,32 +87,32 @@ export default function App() {
 
   // Operation states
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [selectedBooking, setSelectedBooking] = useState<BookingInquiry | null>(null);
   const [packageModalMode, setPackageModalMode] = useState<PackageModalMode | null>(null);
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
   const [packageForm, setPackageForm] = useState<PackageFormState>(createPackageForm());
   const [isSavingPackage, setIsSavingPackage] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<BookingInquiry | null>(null);
 
   // Fetch initial dashboard and list datasets
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsData, packagesData, bookingsData, customersData, inquiriesData, paymentsData, reviewsData] = await Promise.all([
+      const [statsData, packagesData, bookingsData, customersData, paymentsData, reviewsData, inquiriesData] = await Promise.all([
         travelApi.getDashboardStats(),
         travelApi.getPackages(),
         travelApi.getBookings(),
         travelApi.getCustomers(),
-        travelApi.getInquiries(),
         travelApi.getPayments(),
         travelApi.getReviews(),
+        travelApi.getInquiries(),
       ]);
       setStats(statsData);
       setPackages(packagesData);
       setBookings(bookingsData);
       setCustomers(customersData);
-      setInquiries(inquiriesData);
       setPayments(paymentsData);
       setReviews(reviewsData);
+      setInquiries(inquiriesData);
     } catch (err) {
       console.error("Error loading travel agency data:", err);
     } finally {
@@ -259,7 +260,6 @@ export default function App() {
 
   const statuses: PackageStatus[] = ["Active", "Inactive", "Draft"];
 
-  // Handle adding a mock new package (extends the in-memory array)
   const handlePackageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!packageForm.title.trim() || !packageForm.destination.trim() || !packageForm.price.trim()) {
@@ -284,40 +284,46 @@ export default function App() {
       return;
     }
 
+    const nextPackage: TravelPackage = {
+      id: editingPackageId || `pkg-${Date.now()}`,
+      title: packageForm.title.trim(),
+      destination: packageForm.destination.trim(),
+      category: packageForm.category,
+      image: packageForm.image.trim(),
+      price: priceNum,
+      duration: packageForm.duration,
+      rating: ratingNum,
+      status: packageForm.status,
+      description: packageForm.description.trim(),
+    };
+
     setIsSavingPackage(true);
-
     try {
-      const payload = {
-        title: packageForm.title.trim(),
-        destination: packageForm.destination.trim(),
-        category: packageForm.category,
-        image: packageForm.image.trim() || packageImageByCategory[packageForm.category] || packageImageByCategory.Beach,
-        price: priceNum,
-        duration: packageForm.duration.trim(),
-        rating: ratingNum,
-        status: packageForm.status,
-        description: packageForm.description.trim(),
-      };
-
-      if (packageModalMode === "edit" && editingPackageId) {
-        const updated = await travelApi.updatePackage(editingPackageId, payload);
-        setPackages((prev) => prev.map((pkg) => (pkg.id === editingPackageId ? updated : pkg)));
+      if (packageModalMode === "edit") {
+        const updatedPackage = await travelApi.updatePackage(nextPackage.id, nextPackage);
+        setPackages((prev) =>
+          prev.map((pkg) => (pkg.id === updatedPackage.id ? updatedPackage : pkg))
+        );
       } else {
-        const created = await travelApi.addPackage(payload);
-        setPackages((prev) => [created, ...prev]);
+        await travelApi.addPackage(nextPackage);
+        setPackages((prev) => [nextPackage, ...prev]);
       }
 
       await syncStats();
       closePackageModal();
-    } catch (err) {
-      alert("Failed to save package. Please try again.");
+    } catch (error) {
+      alert(
+        packageModalMode === "edit"
+          ? "Failed to update package. Please try again."
+          : "Failed to add package. Please try again."
+      );
     } finally {
       setIsSavingPackage(false);
     }
   };
 
   const handleDeletePackage = async (pkg: TravelPackage) => {
-    const confirmed = window.confirm(`Delete \"${pkg.title}\"? This package will be removed from the catalog.`);
+    const confirmed = window.confirm(`Delete "${pkg.title}"? This package will be removed from the catalog.`);
     if (!confirmed) {
       return;
     }
@@ -430,8 +436,6 @@ export default function App() {
       alert("Failed to update review status. Please try again.");
     }
   };
-
-  // Render variables depending on activeTab
   const headerTitleMap: Record<SidebarTab, string> = {
     overview: "Console Dashboard",
     packages: "Travel Packages Catalog",
@@ -490,6 +494,7 @@ export default function App() {
                   <BookingTable
                     bookings={bookings.slice(0, 5)} // Top 5 bookings for summary screen
                     onStatusChange={handleBookingStatusChange}
+                    onViewDetails={(booking) => setSelectedBooking(booking)}
                     isUpdating={isUpdating}
                   />
                 </div>
@@ -674,7 +679,7 @@ export default function App() {
                 onStatusChange={handleUpdateInquiryStatus}
                 onAssignStaff={handleAssignInquiry}
                 onConvert={handleConvertInquiry}
-                onViewDetails={(inq) => setSelectedInquiry(inq)}
+                onViewDetails={setSelectedInquiry}
                 isUpdating={isUpdating}
               />
             </div>
@@ -719,7 +724,7 @@ export default function App() {
             </div>
           )}
 
-          {/* 6. REVIEWS VIEW */}
+          {/* 7. REVIEWS VIEW */}
           {activeTab === "reviews" && (
             <div className="space-y-6 animate-fade-in">
               <ReviewList

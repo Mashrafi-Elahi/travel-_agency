@@ -78,8 +78,6 @@ export interface DashboardStats {
   pendingInquiries: number;
 }
 
-export type PaymentStatus = "Paid" | "Unpaid" | "Partial" | "Refunded";
-
 export interface PaymentRecord {
   id: string;
   bookingId: string;
